@@ -1,11 +1,23 @@
-#include <glm/glm.hpp>
-#include <GL/glut.h>
+#ifndef RENDERER_H
+#define RENDERER_H
 
-using namespace glm;
+#include <GL/glew.h>
+#include <GL/glut.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+
 class Renderer
 {
-    Renderer();
-    mat4 projection;
-    mat4 view;
-    mat4 model;
+public:
+    Renderer(GLuint program);
+    void Draw();
+    void ProcessKeys(GLFWwindow *window);
+
+private:
+    GLuint program;
+    glm::mat4 projection;
+    glm::mat4 view;
+    glm::mat4 model;
 };
+
+#endif

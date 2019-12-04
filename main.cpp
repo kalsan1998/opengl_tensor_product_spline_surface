@@ -1,36 +1,11 @@
 #include "shader_loader.hpp"
+#include "renderer.hpp"
 
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
-
-void Draw()
-{
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    GLfloat vertices[] = {
-        -0.5f,
-        -0.5f,
-        0.0f,
-        0.5f,
-        0.5f,
-        0.0f,
-        0.0f,
-        0.5f,
-        0.0f,
-    };
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDisableVertexAttribArray(0);
-}
 
 int main(int argc, char **argv)
 {
@@ -61,18 +36,17 @@ int main(int argc, char **argv)
         fprintf(stderr, "Failed to initialize GLEW\n");
         return -1;
     }
-
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-    GLuint shader_program = LoadShader("vertex_shader.vs", "fragment_shader.fs");
+    GLuint shader_program = LoadShader("shaders/vertex_shader.vs", "shaders/fragment_shader.fs");
     glUseProgram(shader_program);
-
+    Renderer renderer(shader_program);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     do
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        Draw();
+        renderer.ProcessKeys(window);
+        renderer.Draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
