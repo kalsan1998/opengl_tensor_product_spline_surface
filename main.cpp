@@ -1,11 +1,10 @@
-#include <iostream>
+#include "shader_loader.hpp"
 
-#include "load_shader.hpp"
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-using namespace glm;
+#include <iostream>
 
 void Draw()
 {
@@ -33,25 +32,6 @@ void Draw()
     glDisableVertexAttribArray(0);
 }
 
-GLuint CreateShader(GLenum type, const GLchar *src)
-{
-    GLint Result = GL_FALSE;
-    int InfoLogLength;
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &src, nullptr);
-    glCompileShader(shader);
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &Result);
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    if (InfoLogLength > 0)
-    {
-        std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
-        glGetShaderInfoLog(shader, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-        printf("%s\n", &FragmentShaderErrorMessage[0]);
-    }
-    return shader;
-}
-
-// Read the Fragment Shader code from the
 int main(int argc, char **argv)
 {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -84,23 +64,8 @@ int main(int argc, char **argv)
 
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-    GLuint vertexShader = CreateShader(GL_VERTEX_SHADER, kVertexShaderSource);
-    GLuint fragmentShader = CreateShader(GL_FRAGMENT_SHADER, kFragmentShaderSource);
-
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    char *infoLog;
-    int success;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-    }
-    glUseProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    GLuint shader_program = LoadShader("vertex_shader.vs", "fragment_shader.fs");
+    glUseProgram(shader_program);
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     do
