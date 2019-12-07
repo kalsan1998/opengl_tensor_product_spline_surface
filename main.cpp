@@ -7,12 +7,19 @@
 #include <glm/glm.hpp>
 #include <iostream>
 
+Renderer *renderer;
+void MouseScroll(GLFWwindow *window, double x, double y)
+{
+    renderer->MouseScroll(y);
+}
+
 int main(int argc, char **argv)
 {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glewExperimental = true; // Needed for core profile
+    glutInit(&argc, argv);
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to initialize GLFW\n");
@@ -36,20 +43,23 @@ int main(int argc, char **argv)
         fprintf(stderr, "Failed to initialize GLEW\n");
         return -1;
     }
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     GLuint shader_program = LoadShader("shaders/vertex_shader.vs", "shaders/fragment_shader.fs");
     glUseProgram(shader_program);
-    Renderer renderer(shader_program);
+    renderer = new Renderer(shader_program);
+    glfwSetScrollCallback(window, MouseScroll);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     do
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        renderer.ProcessKeys(window);
-        renderer.Draw();
+        renderer->ProcessKeys(window);
+        renderer->Draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
              glfwWindowShouldClose(window) == 0);
+
+    delete renderer;
 }
