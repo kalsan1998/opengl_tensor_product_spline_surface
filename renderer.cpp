@@ -74,6 +74,7 @@ void Renderer::MouseScroll(double y)
 void Renderer::DrawBezierCurve()
 {
     bezier.DrawControlPolygon();
+    bezier.DrawBezierCurve();
 }
 
 void Renderer::DrawCube()
