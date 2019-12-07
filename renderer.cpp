@@ -14,6 +14,13 @@ Renderer::Renderer(GLuint program) : program(program), zoom(5.0f), theta(0.0f), 
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
+
+    float control[12] = {
+        -1.0f, -1.0f, 0.0f,
+        -0.25f, 0.75f, 0.0f,
+        0.5f, -0.25f, 0.0f,
+        1.0f, 1.0f, 0.0f};
+    bezier.SetControlPoints(control, 4);
 }
 
 void Renderer::Draw()
@@ -66,12 +73,6 @@ void Renderer::MouseScroll(double y)
 
 void Renderer::DrawBezierCurve()
 {
-    float control[12] = {
-        -1.0f, -1.0f, 0.0f,
-        -0.25f, 0.75f, 0.0f,
-        0.5f, -0.25f, 0.0f,
-        1.0f, 1.0f, 0.0f};
-    bezier.SetControlPoints(control, 4);
     bezier.DrawControlPolygon();
 }
 
