@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include "bezier.hpp"
+#include "sphere.hpp"
 
 class Renderer
 {
@@ -18,10 +19,11 @@ public:
 
 private:
     void DrawBezierCurve();
-    void DrawCube();
-    void DrawTriangle();
+    void DrawSphere();
 
     GLuint program;
+    GLuint color_location;
+
     glm::mat4 projection;
     glm::mat4 view;
     glm::mat4 model;
@@ -31,6 +33,7 @@ private:
     float phi;
 
     BezierDrawer bezier;
+    SphereDrawer sphere;
 };
 
 #endif

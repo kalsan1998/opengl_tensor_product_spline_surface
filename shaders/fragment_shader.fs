@@ -7,7 +7,7 @@ out vec4 color;
 void main() {
   vec3 light_color = vec3(1.0, 1.0, 1.0);
 
-  float ambient_strength = 0.3;
+  float ambient_strength = 1.0;
   vec3 ambient = ambient_strength * light_color;
 
   vec3 light_pos = vec3(2.0, 2.0, 2.0);
@@ -16,6 +16,5 @@ void main() {
   float diff = max(dot(norm, light_direction), 0.0);
   vec3 diffuse = diff * light_color;
 
-  //color = vec4((ambient + diffuse) * fragment_color, 1.0);
-  color = vec4(fragment_color, 1.0);
+  color = vec4((ambient + diffuse) * fragment_color, 1.0);
 }

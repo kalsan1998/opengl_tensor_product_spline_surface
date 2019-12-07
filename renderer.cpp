@@ -6,6 +6,8 @@
 
 Renderer::Renderer(GLuint program) : program(program), zoom(5.0f), theta(0.0f), phi(0.0f)
 {
+    color_location = glGetUniformLocation(program, "uni_color");
+
     projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     view = glm::lookAt(glm::vec3(0.0f, 0.0f, zoom), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::mat4(1.0f);
@@ -21,6 +23,7 @@ Renderer::Renderer(GLuint program) : program(program), zoom(5.0f), theta(0.0f), 
         0.5f, -0.25f, 0.0f,
         1.0f, 1.0f, 0.0f};
     bezier.SetControlPoints(control, 4);
+    sphere.SetAttributes(1.0f, 12, 36);
 }
 
 void Renderer::Draw()
@@ -31,7 +34,7 @@ void Renderer::Draw()
     glUniformMatrix4fv(model_location, 1, GL_FALSE, &(model)[0][0]);
     glUniformMatrix4fv(view_location, 1, GL_FALSE, &(view)[0][0]);
     glUniformMatrix4fv(projection_location, 1, GL_FALSE, &(projection)[0][0]);
-    DrawBezierCurve();
+    DrawSphere();
 }
 
 void Renderer::ProcessKeys(GLFWwindow *window)
@@ -73,8 +76,6 @@ void Renderer::MouseScroll(double y)
 
 void Renderer::DrawBezierCurve()
 {
-    GLuint color_location = glGetUniformLocation(program, "uni_color");
-
     float polygon_color[3] = {1.0f, 0.0f, 0.0f}; // Red
     glUniform3fv(color_location, 1, polygon_color);
     bezier.DrawControlPolygon();
@@ -88,76 +89,9 @@ void Renderer::DrawBezierCurve()
     bezier.DrawControlPoints();
 }
 
-void Renderer::DrawCube()
+void Renderer::DrawSphere()
 {
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-
-        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
-
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f};
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // GLuint colorbuffer;
-    // glGenBuffers(1, &colorbuffer);
-    // glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
-    // // 2nd attribute buffer : colors
-    // glEnableVertexAttribArray(2);
-    // glVertexAttribPointer(
-    //     2,        // attribute. No particular reason for 2, but must match the layout in the shader.
-    //     3,        // size
-    //     GL_FLOAT, // type
-    //     GL_FALSE, // normalized?
-    //     0,        // stride
-    //     (void *)0 // array buffer offset
-    // );
-
-    glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+    float sphere_color[3] = {1.0f, 0.0f, 0.0f}; // Red
+    glUniform3fv(color_location, 1, sphere_color);
+    sphere.DrawSphere();
 }
