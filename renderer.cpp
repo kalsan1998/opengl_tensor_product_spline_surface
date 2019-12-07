@@ -31,23 +31,23 @@ void Renderer::ProcessKeys(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        phi += 0.1;
-        model = glm::rotate(model, 0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
+        phi += 0.1f;
+        model = glm::rotate(model, 0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
     }
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        phi -= 0.1;
-        model = glm::rotate(model, -0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
+        phi -= 0.1f;
+        model = glm::rotate(model, -0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        theta += 0.1;
-        model = glm::rotate(model, 0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+        theta -= 0.1f;
+        model = glm::rotate(model, -0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        theta -= 0.1;
-        model = glm::rotate(model, -0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+        theta += 0.1f;
+        model = glm::rotate(model, 0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
     }
 }
 
