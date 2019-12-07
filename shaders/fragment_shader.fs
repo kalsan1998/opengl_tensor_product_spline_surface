@@ -16,5 +16,6 @@ void main() {
   float diff = max(dot(norm, light_direction), 0.0);
   vec3 diffuse = diff * light_color;
 
-  color = vec4((ambient + diffuse) * fragment_color, 1.0);
+  //color = vec4((ambient + diffuse) * fragment_color, 1.0);
+  color = vec4(fragment_color, 1.0);
 }
