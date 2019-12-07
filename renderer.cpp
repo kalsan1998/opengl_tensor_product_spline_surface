@@ -66,11 +66,11 @@ void Renderer::MouseScroll(double y)
 
 void Renderer::DrawBezierCurve()
 {
-    float control[4][3] = {
-        {-1.0f, -1.0f, 0.0f},
-        {-0.25f, 0.75f, 0.0f},
-        {0.5f, -0.25f, 0.0f},
-        {1.0f, 1.0f, 0.0f}};
+    float control[12] = {
+        -1.0f, -1.0f, 0.0f,
+        -0.25f, 0.75f, 0.0f,
+        0.5f, -0.25f, 0.0f,
+        1.0f, 1.0f, 0.0f};
     bezier.SetControlPoints(control, 4);
     bezier.DrawControlPolygon();
 }
