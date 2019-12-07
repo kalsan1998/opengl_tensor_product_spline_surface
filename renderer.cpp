@@ -24,7 +24,7 @@ void Renderer::Draw()
     glUniformMatrix4fv(model_location, 1, GL_FALSE, &(model)[0][0]);
     glUniformMatrix4fv(view_location, 1, GL_FALSE, &(view)[0][0]);
     glUniformMatrix4fv(projection_location, 1, GL_FALSE, &(projection)[0][0]);
-    DrawCube();
+    DrawBezierCurve();
 }
 
 void Renderer::ProcessKeys(GLFWwindow *window)
@@ -62,6 +62,17 @@ void Renderer::MouseScroll(double y)
     {
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, 0.2f * y));
     }
+}
+
+void Renderer::DrawBezierCurve()
+{
+    float control[4][3] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-0.25f, 0.75f, 0.0f},
+        {0.5f, -0.25f, 0.0f},
+        {1.0f, 1.0f, 0.0f}};
+    bezier.SetControlPoints(control, 4);
+    bezier.DrawControlPolygon();
 }
 
 void Renderer::DrawCube()
@@ -174,30 +185,4 @@ void Renderer::DrawCube()
     // );
 
     glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
-}
-
-void Renderer::DrawTriangle()
-{
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    GLfloat vertices[] = {
-        -0.5f,
-        -0.5f,
-        0.0f,
-        0.5f,
-        0.5f,
-        0.0f,
-        0.0f,
-        0.5f,
-        0.0f,
-    };
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDisableVertexAttribArray(0);
 }

@@ -6,6 +6,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include "bezier.hpp"
+
 class Renderer
 {
 public:
@@ -15,6 +17,7 @@ public:
     void MouseScroll(double y);
 
 private:
+    void DrawBezierCurve();
     void DrawCube();
     void DrawTriangle();
 
@@ -26,6 +29,8 @@ private:
     float zoom;
     float theta;
     float phi;
+
+    BezierDrawer bezier;
 };
 
 #endif
