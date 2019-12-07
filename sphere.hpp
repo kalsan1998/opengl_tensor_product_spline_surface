@@ -20,6 +20,7 @@ private:
 
     GLuint sphere_vao;
     GLuint sphere_vbo;
+    GLuint element_vbo;
 };
 
 #endif

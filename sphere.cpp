@@ -13,6 +13,9 @@ SphereDrawer::SphereDrawer() : radius(0.0), rings(0), sectors(0)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void *)(sizeof(float) * 3));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+
+    glGenBuffers(1, &element_vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
 }
 
 void SphereDrawer::SetAttributes(float radi, int r, int s)
@@ -45,13 +48,29 @@ void SphereDrawer::LoadVertices()
             v[base + 5] = z;
         }
     }
+    GLushort indices[rings * sectors * 4];
+    for (int r = 0; r < rings; ++r)
+    {
+        for (int s = 0; s < sectors; ++s)
+        {
+            int base = (r * sectors * 4) + (s * 4);
+            indices[base] = r * sectors + s;
+            indices[base + 1] = r * sectors + (s + 1);
+            indices[base + 2] = (r + 1) * sectors + (s + 1);
+            indices[base + 3] = (r + 1) * sectors + s;
+        }
+    }
     glBindVertexArray(sphere_vao);
     glBindBuffer(GL_ARRAY_BUFFER, sphere_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
 void SphereDrawer::DrawSphere()
 {
     glBindVertexArray(sphere_vao);
-    glDrawArrays(GL_TRIANGLES, 0, rings * sectors);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
+    glDrawElements(GL_LINE_STRIP, rings * sectors * 4, GL_UNSIGNED_SHORT, 0);
 }

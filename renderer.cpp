@@ -23,7 +23,7 @@ Renderer::Renderer(GLuint program) : program(program), zoom(5.0f), theta(0.0f), 
         0.5f, -0.25f, 0.0f,
         1.0f, 1.0f, 0.0f};
     bezier.SetControlPoints(control, 4);
-    sphere.SetAttributes(1.0f, 12, 36);
+    sphere.SetAttributes(0.5f, 12, 36);
 }
 
 void Renderer::Draw()
