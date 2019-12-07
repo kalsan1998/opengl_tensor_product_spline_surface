@@ -20,7 +20,10 @@ private:
     int interp;
     float *ctrl_pts;
 
-    GLuint control_pts_vao;
+    GLuint ctrl_pts_vao;
     GLuint interp_pts_vao;
+
+    GLuint ctrl_vbo;
+    GLuint interp_vbo;
 };
 #endif

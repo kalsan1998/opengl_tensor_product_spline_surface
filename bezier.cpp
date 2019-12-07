@@ -10,8 +10,19 @@ using std::pow;
 
 BezierDrawer::BezierDrawer() : n(0), interp(30)
 {
-    glGenVertexArrays(1, &control_pts_vao);
+    glGenVertexArrays(1, &ctrl_pts_vao);
+    glBindVertexArray(ctrl_pts_vao);
+    glGenBuffers(1, &ctrl_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, ctrl_vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
     glGenVertexArrays(1, &interp_pts_vao);
+    glBindVertexArray(interp_pts_vao);
+    glGenBuffers(1, &interp_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, interp_vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
 }
 
 void BezierDrawer::SetControlPoints(float *pts, int n_pts)
@@ -24,31 +35,23 @@ void BezierDrawer::SetControlPoints(float *pts, int n_pts)
 
 void BezierDrawer::DrawControlPoints()
 {
-    glBindVertexArray(control_pts_vao);
-    glEnableVertexAttribArray(0);
+    glBindVertexArray(ctrl_pts_vao);
     glPointSize(6.0f);
     glDrawArrays(GL_POINTS, 0, n + 1);
-    glDisableVertexAttribArray(0);
 }
 
 void BezierDrawer::DrawControlPolygon()
 {
-    glBindVertexArray(control_pts_vao);
-    glEnableVertexAttribArray(0);
+    glBindVertexArray(ctrl_pts_vao);
     glLineWidth(1.0f);
     glDrawArrays(GL_LINE_STRIP, 0, n + 1);
-    glDisableVertexAttribArray(0);
 }
 
 void BezierDrawer::DrawBezierCurve()
 {
     glBindVertexArray(interp_pts_vao);
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(2);
     glLineWidth(3.0f);
     glDrawArrays(GL_LINE_STRIP, 0, interp);
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(2);
 }
 
 float BezierDrawer::BasisFn(float u, int i)
@@ -63,12 +66,10 @@ void BezierDrawer::LoadControlPoints()
     {
         vertices[i] = ctrl_pts[i];
     }
-    glBindVertexArray(control_pts_vao);
-    GLuint control_pts_vbo;
-    glGenBuffers(1, &control_pts_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, control_pts_vbo);
+
+    glBindVertexArray(ctrl_pts_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, ctrl_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 void BezierDrawer::LoadInterpolatedPoints()
@@ -88,9 +89,6 @@ void BezierDrawer::LoadInterpolatedPoints()
     }
 
     glBindVertexArray(interp_pts_vao);
-    GLuint interp_pts_vbo;
-    glGenBuffers(1, &interp_pts_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, interp_pts_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, interp_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(interp_vertices), interp_vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
