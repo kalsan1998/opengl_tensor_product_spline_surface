@@ -4,7 +4,7 @@ CXX=g++
 all: main
 LDLIBS=-L/usr/lib/ -lglfw3 -lGL	-lglut -lGLEW
 
-OBJS=main.o	shader_loader.o	renderer.o sphere.o bezier.o bspline.o
+OBJS=main.o	shader_loader.o	renderer.o sphere.o bezier.o bspline.o bspline_surface.o
 main: $(OBJS)
 	$(CXX) -o main $(OBJS) $(LDLIBS)
 
@@ -14,7 +14,7 @@ main.o:	main.cpp shader_loader.hpp renderer.hpp
 shader_loader.o: shader_loader.cpp
 	$(CXX) -c shader_loader.cpp
 
-renderer.o: renderer.cpp sphere.hpp bezier.hpp bspline.hpp
+renderer.o: renderer.cpp sphere.hpp bezier.hpp bspline.hpp bspline_surface.hpp
 	$(CXX) -c renderer.cpp
 
 sphere.o: sphere.cpp
@@ -25,6 +25,9 @@ bezier.o: bezier.cpp
 
 bspline.o: bspline.cpp
 	$(CXX) -c bspline.cpp
+
+bspline_surface.o: bspline_surface.cpp
+	$(CXX) -c bspline_surface.cpp
 
 clean:
 	rm -f $(OBJS)

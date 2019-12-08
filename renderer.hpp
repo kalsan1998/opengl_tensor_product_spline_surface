@@ -8,6 +8,7 @@
 
 #include "bezier.hpp"
 #include "bspline.hpp"
+#include "bspline_surface.hpp"
 #include "sphere.hpp"
 
 enum DrawObject
@@ -15,6 +16,7 @@ enum DrawObject
     DRAW_SPHERE,
     DRAW_BEZIER,
     DRAW_BSPLINE,
+    DRAW_BSPLINE_SURFACE,
 };
 
 class Renderer
@@ -28,6 +30,7 @@ public:
 private:
     void DrawBezierCurve();
     void DrawBSplineCurve();
+    void DrawBSplineSurface();
     void DrawSphere();
 
     GLuint program;
@@ -46,6 +49,7 @@ private:
 
     bool free_mode;
 
+    BSplineSurfaceDrawer bspline_surface;
     BSplineDrawer bspline;
     BezierDrawer bezier;
     SphereDrawer sphere;

@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-BSplineDrawer::BSplineDrawer() : interp(100), n(6), m(9)
+BSplineDrawer::BSplineDrawer() : interp(100)
 {
     glGenVertexArrays(1, &curve_points_vao);
     glBindVertexArray(curve_points_vao);
@@ -34,8 +34,10 @@ BSplineDrawer::BSplineDrawer() : interp(100), n(6), m(9)
         glm::vec3(0.3f, 0.2f, 0.0f),
         glm::vec3(0.0f, 0.1f, 0.0f),
     };
-    deg = m - n - 1;
     knots = {0.0f, 0.0f, 0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f, 1.0f, 1.0f};
+    n = control_points.size() - 1;
+    m = knots.size() - 1;
+    deg = m - n - 1;
     LoadInterpolatedPoints();
     LoadControlPoints();
 }

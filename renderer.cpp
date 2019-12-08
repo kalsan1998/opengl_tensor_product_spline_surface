@@ -37,6 +37,9 @@ void Renderer::Draw()
     case DRAW_BSPLINE:
         DrawBSplineCurve();
         break;
+    case DRAW_BSPLINE_SURFACE:
+        DrawBSplineSurface();
+        break;
     default:
         break;
     }
@@ -80,6 +83,14 @@ void Renderer::DrawBSplineCurve()
     glUniform3fv(color_location, 1, point_color);
     glPointSize(5.0f * scale);
     bspline.DrawControlPoints();
+}
+
+void Renderer::DrawBSplineSurface()
+{
+    float surface_color[3] = {0.7f, 0.7f, 0.0f};
+    glUniform3fv(color_location, 1, surface_color);
+    glPointSize(1.0f * scale);
+    bspline_surface.DrawBSplineSurface();
 }
 
 void Renderer::DrawSphere()
@@ -162,6 +173,10 @@ void Renderer::ProcessKeysCallback(int key, int action)
     if (key == GLFW_KEY_B)
     {
         draw_object = DRAW_BSPLINE;
+    }
+    if (key == GLFW_KEY_T)
+    {
+        draw_object = DRAW_BSPLINE_SURFACE;
     }
 }
 
