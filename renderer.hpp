@@ -14,6 +14,7 @@ enum DrawObject
 {
     DRAW_SPHERE,
     DRAW_BEZIER,
+    DRAW_BSPLINE,
 };
 
 class Renderer
@@ -26,6 +27,7 @@ public:
 
 private:
     void DrawBezierCurve();
+    void DrawBSplineCurve();
     void DrawSphere();
 
     GLuint program;

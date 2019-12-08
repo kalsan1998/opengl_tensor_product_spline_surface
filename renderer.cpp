@@ -34,6 +34,9 @@ void Renderer::Draw()
     case DRAW_SPHERE:
         DrawSphere();
         break;
+    case DRAW_BSPLINE:
+        DrawBSplineCurve();
+        break;
     default:
         break;
     }
@@ -75,6 +78,10 @@ void Renderer::ProcessKeysCallback(int key, int action)
     {
         draw_object = DRAW_BEZIER;
     }
+    if (key == GLFW_KEY_B)
+    {
+        draw_object = DRAW_BSPLINE;
+    }
 }
 
 void Renderer::MouseScroll(double y)
@@ -103,6 +110,13 @@ void Renderer::DrawBezierCurve()
     float point_color[3] = {1.0f, 0.0f, 0.0f}; // Red
     glUniform3fv(color_location, 1, point_color);
     bezier.DrawControlPoints();
+}
+
+void Renderer::DrawBSplineCurve()
+{
+    float curve_color[3] = {0.0f, 0.0f, 1.0f}; // Blue
+    glUniform3fv(color_location, 1, curve_color);
+    bspline.DrawBSplineCurve();
 }
 
 void Renderer::DrawSphere()
