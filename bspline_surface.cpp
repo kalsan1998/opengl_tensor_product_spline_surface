@@ -12,6 +12,9 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer() : interp(10)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
+    glGenBuffers(1, &element_vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
+
     control_points = {
         {
             glm::vec3(-1.0f, -1.0f, 0.0f),
@@ -51,7 +54,8 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer() : interp(10)
 void BSplineSurfaceDrawer::DrawBSplineSurface()
 {
     glBindVertexArray(interpolated_points_vao);
-    glDrawArrays(GL_QUAD_STRIP, 0, interp * interp);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
+    glDrawElements(GL_TRIANGLES, (interp - 1) * (interp - 1) * 6, GL_UNSIGNED_SHORT, 0);
 }
 
 void BSplineSurfaceDrawer::LoadInterpolatedPoints()
@@ -76,9 +80,25 @@ void BSplineSurfaceDrawer::LoadInterpolatedPoints()
             interp_vertices[(u * interp) + v] = c_u;
         }
     }
-
     glBindBuffer(GL_ARRAY_BUFFER, interpolated_points_vbo);
     glBufferData(GL_ARRAY_BUFFER, interp_vertices.size() * 3 * sizeof(float), &interp_vertices[0], GL_STATIC_DRAW);
+
+    std::vector<GLushort> indices((interp - 1) * (interp - 1) * 6); // Each cell hs 2 triangles == 6 vertices;
+    for (int i = 0; i < interp - 1; ++i)
+    {
+        for (int j = 0; j < interp - 1; ++j)
+        {
+            int base = i * (interp - 1) * 6 + (j * 6);
+            indices[base] = i * interp + j;
+            indices[base + 1] = i * interp + j + 1;
+            indices[base + 2] = (i + 1) * interp + j;
+            indices[base + 3] = indices[base + 1];
+            indices[base + 4] = indices[base + 2];
+            indices[base + 5] = indices[base + 2] + 1;
+        }
+    }
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 }
 
 // TODO: DP

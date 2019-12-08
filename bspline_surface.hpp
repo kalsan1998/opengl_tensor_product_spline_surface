@@ -23,6 +23,7 @@ private:
 
     GLuint interpolated_points_vao;
     GLuint interpolated_points_vbo;
+    GLuint element_vbo;
 
     int m; // m + 1 rows of control points;
     int n; // n + 1 columns of control points;
