@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-SphereDrawer::SphereDrawer() : radius(0.0), rings(0), sectors(0), draw_mode(GL_POINTS)
+SphereDrawer::SphereDrawer() : radius(1.0f), rings(12), sectors(36), draw_mode(GL_POINTS)
 {
     glGenVertexArrays(1, &sphere_vao);
     glBindVertexArray(sphere_vao);
@@ -18,13 +18,7 @@ SphereDrawer::SphereDrawer() : radius(0.0), rings(0), sectors(0), draw_mode(GL_P
 
     glGenBuffers(1, &element_vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
-}
 
-void SphereDrawer::SetAttributes(float radi, int r, int s)
-{
-    radius = radi;
-    rings = r;
-    sectors = s;
     LoadVertices();
 }
 

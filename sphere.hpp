@@ -12,7 +12,6 @@ class SphereDrawer
 public:
     SphereDrawer();
     void ProcessKeys(int key, int action);
-    void SetAttributes(float radi, int r, int s);
     void DrawSphere();
 
 private:

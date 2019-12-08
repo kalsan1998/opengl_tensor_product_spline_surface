@@ -7,11 +7,13 @@
 #include <glm/glm.hpp>
 
 #include "bezier.hpp"
+#include "bspline.hpp"
 #include "sphere.hpp"
 
 enum DrawObject
 {
     DRAW_SPHERE,
+    DRAW_BEZIER,
 };
 
 class Renderer
@@ -39,6 +41,7 @@ private:
     float theta;
     float phi;
 
+    BSplineDrawer bspline;
     BezierDrawer bezier;
     SphereDrawer sphere;
 };

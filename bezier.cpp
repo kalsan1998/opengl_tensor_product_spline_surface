@@ -3,12 +3,11 @@
 #include <boost/math/special_functions/factorials.hpp>
 #include <cmath>
 #include <iostream>
-#include <glm/glm.hpp>
 
 using boost::math::factorial;
 using std::pow;
 
-BezierDrawer::BezierDrawer() : n(0), interp(30)
+BezierDrawer::BezierDrawer() : n(3), interp(30)
 {
     glGenVertexArrays(1, &ctrl_pts_vao);
     glBindVertexArray(ctrl_pts_vao);
@@ -23,12 +22,12 @@ BezierDrawer::BezierDrawer() : n(0), interp(30)
     glBindBuffer(GL_ARRAY_BUFFER, interp_vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
-}
 
-void BezierDrawer::SetControlPoints(float *pts, int n_pts)
-{
-    ctrl_pts = pts;
-    n = n_pts - 1;
+    control_points = {
+        glm::vec3(-1.0f, -1.0f, 0.0f),
+        glm::vec3(-0.25f, 0.75f, 0.0f),
+        glm::vec3(0.5f, -0.25f, 0.0f),
+        glm::vec3(1.0f, 1.0f, 0.0f)};
     LoadControlPoints();
     LoadInterpolatedPoints();
 }
@@ -61,34 +60,26 @@ float BezierDrawer::BasisFn(float u, int i)
 
 void BezierDrawer::LoadControlPoints()
 {
-    float vertices[(n + 1) * 3];
-    for (int i = 0; i < (n + 1) * 3; ++i)
-    {
-        vertices[i] = ctrl_pts[i];
-    }
-
     glBindVertexArray(ctrl_pts_vao);
     glBindBuffer(GL_ARRAY_BUFFER, ctrl_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, control_points.size() * 3 * sizeof(float), &control_points[0], GL_STATIC_DRAW);
 }
 
 void BezierDrawer::LoadInterpolatedPoints()
 {
-    float interp_vertices[interp * 3];
+    std::vector<glm::vec3> interp_vertices(interp);
     for (int u = 0; u < interp; ++u)
     {
         float norm_u = (float)u / (float)interp;
         glm::vec3 c_u(0.0f);
         for (int i = 0; i < n + 1; ++i)
         {
-            c_u += BasisFn(norm_u, i) * glm::vec3(ctrl_pts[i * 3], ctrl_pts[(i * 3) + 1], ctrl_pts[(i * 3) + 2]);
+            c_u += BasisFn(norm_u, i) * control_points[i];
         }
-        interp_vertices[u * 3] = c_u.x;
-        interp_vertices[(u * 3) + 1] = c_u.y;
-        interp_vertices[(u * 3) + 2] = c_u.z + 0.01f;
+        interp_vertices[u] = c_u;
     }
 
     glBindVertexArray(interp_pts_vao);
     glBindBuffer(GL_ARRAY_BUFFER, interp_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(interp_vertices), interp_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, interp_vertices.size() * 3 * sizeof(float), &interp_vertices[0], GL_STATIC_DRAW);
 }

@@ -16,14 +16,6 @@ Renderer::Renderer(GLuint program) : draw_object(DRAW_SPHERE), program(program),
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
-
-    float control[12] = {
-        -1.0f, -1.0f, 0.0f,
-        -0.25f, 0.75f, 0.0f,
-        0.5f, -0.25f, 0.0f,
-        1.0f, 1.0f, 0.0f};
-    bezier.SetControlPoints(control, 4);
-    sphere.SetAttributes(1.0f, 12, 36);
 }
 
 void Renderer::Draw()
@@ -34,7 +26,17 @@ void Renderer::Draw()
     glUniformMatrix4fv(model_location, 1, GL_FALSE, &(model)[0][0]);
     glUniformMatrix4fv(view_location, 1, GL_FALSE, &(view)[0][0]);
     glUniformMatrix4fv(projection_location, 1, GL_FALSE, &(projection)[0][0]);
-    DrawSphere();
+    switch (draw_object)
+    {
+    case DRAW_BEZIER:
+        DrawBezierCurve();
+        break;
+    case DRAW_SPHERE:
+        DrawSphere();
+        break;
+    default:
+        break;
+    }
 }
 
 void Renderer::ProcessKeysCallback(int key, int action)
@@ -68,6 +70,10 @@ void Renderer::ProcessKeysCallback(int key, int action)
     if (key == GLFW_KEY_S)
     {
         draw_object = DRAW_SPHERE;
+    }
+    if (key == GLFW_KEY_Z)
+    {
+        draw_object = DRAW_BEZIER;
     }
 }
 
