@@ -60,7 +60,7 @@ void SphereDrawer::LoadVertices()
     glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) - sizeof(GLushort), &indices[0], GL_STATIC_DRAW);
 }
 
 void SphereDrawer::DrawSphere()
