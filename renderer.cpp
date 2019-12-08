@@ -4,7 +4,7 @@
 
 #include "glm/ext.hpp"
 
-Renderer::Renderer(GLuint program) : draw_object(DRAW_SPHERE), program(program), zoom(5.0f), theta(0.0f), phi(0.0f)
+Renderer::Renderer(GLuint program) : draw_object(DRAW_SPHERE), program(program), zoom(5.0f), scale(1.0f), theta(0.0f), phi(0.0f), free_mode(false)
 {
     color_location = glGetUniformLocation(program, "uni_color");
 
@@ -41,6 +41,45 @@ void Renderer::Draw()
         break;
     }
 }
+void Renderer::DrawBezierCurve()
+{
+    float polygon_color[3] = {1.0f, 0.0f, 0.0f};
+    glUniform3fv(color_location, 1, polygon_color);
+    glLineWidth(1.0f * scale);
+    bezier.DrawControlPolygon();
+
+    float curve_color[3] = {0.0f, 0.0f, 1.0f};
+    glUniform3fv(color_location, 1, curve_color);
+    glLineWidth(3.0f * scale);
+    bezier.DrawBezierCurve();
+
+    float point_color[3] = {1.0f, 0.0f, 0.0f};
+    glUniform3fv(color_location, 1, point_color);
+    glPointSize(5.0f * scale);
+    bezier.DrawControlPoints();
+}
+
+void Renderer::DrawBSplineCurve()
+{
+    float curve_color[3] = {0.0f, 0.0f, 1.0f};
+    glUniform3fv(color_location, 1, curve_color);
+    glLineWidth(3.0 * scale);
+    bspline.DrawBSplineCurve();
+
+    float knot_color[3] = {0.0f, 1.0f, 0.0f};
+    glUniform3fv(color_location, 1, knot_color);
+    glPointSize(5.0f * scale);
+    bspline.DrawKnots();
+}
+
+void Renderer::DrawSphere()
+{
+    float sphere_color[3] = {1.0f, 0.0f, 0.0f};
+    glUniform3fv(color_location, 1, sphere_color);
+    glPointSize(1.0f * scale);
+    glLineWidth(1.0f * scale);
+    sphere.DrawSphere();
+}
 
 void Renderer::ProcessKeysCallback(int key, int action)
 {
@@ -48,23 +87,55 @@ void Renderer::ProcessKeysCallback(int key, int action)
         return;
     if (key == GLFW_KEY_DOWN)
     {
-        phi += 0.1f;
-        model = glm::rotate(model, 0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
+        if (free_mode)
+        {
+            view = glm::translate(view, glm::vec3(0.0f, 0.1f, 0.0f));
+        }
+        else
+        {
+            phi += 0.1f;
+            model = glm::rotate(model, 0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
+        }
     }
     if (key == GLFW_KEY_UP)
     {
-        phi -= 0.1f;
-        model = glm::rotate(model, -0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
+        if (free_mode)
+        {
+            view = glm::translate(view, glm::vec3(0.0f, -0.1f, 0.0f));
+        }
+        else
+        {
+            phi -= 0.1f;
+            model = glm::rotate(model, -0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
+        }
     }
     if (key == GLFW_KEY_LEFT)
     {
-        theta -= 0.1f;
-        model = glm::rotate(model, -0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
+        if (free_mode)
+        {
+            view = glm::translate(view, glm::vec3(0.1f, 0.0f, 0.0f));
+        }
+        else
+        {
+            theta -= 0.1f;
+            model = glm::rotate(model, -0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
+        }
     }
     if (key == GLFW_KEY_RIGHT)
     {
-        theta += 0.1f;
-        model = glm::rotate(model, 0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
+        if (free_mode)
+        {
+            view = glm::translate(view, glm::vec3(-0.1f, 0.0f, 0.0f));
+        }
+        else
+        {
+            theta += 0.1f;
+            model = glm::rotate(model, 0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
+        }
+    }
+    if (key == GLFW_KEY_F)
+    {
+        free_mode = !free_mode;
     }
     if (draw_object == DRAW_SPHERE)
     {
@@ -95,37 +166,5 @@ void Renderer::MouseScroll(double y)
     {
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, 0.2f * y));
     }
-}
-
-void Renderer::DrawBezierCurve()
-{
-    float polygon_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, polygon_color);
-    bezier.DrawControlPolygon();
-
-    float curve_color[3] = {0.0f, 0.0f, 1.0f};
-    glUniform3fv(color_location, 1, curve_color);
-    bezier.DrawBezierCurve();
-
-    float point_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, point_color);
-    bezier.DrawControlPoints();
-}
-
-void Renderer::DrawBSplineCurve()
-{
-    float curve_color[3] = {0.0f, 0.0f, 1.0f};
-    glUniform3fv(color_location, 1, curve_color);
-    bspline.DrawBSplineCurve();
-
-    float knot_color[3] = {0.0f, 1.0f, 0.0f};
-    glUniform3fv(color_location, 1, knot_color);
-    bspline.DrawKnots();
-}
-
-void Renderer::DrawSphere()
-{
-    float sphere_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, sphere_color);
-    sphere.DrawSphere();
+    scale = std::max(5.0f / zoom, 1.0f);
 }

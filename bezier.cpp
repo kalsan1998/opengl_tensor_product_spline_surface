@@ -35,21 +35,18 @@ BezierDrawer::BezierDrawer() : n(3), interp(30)
 void BezierDrawer::DrawControlPoints()
 {
     glBindVertexArray(ctrl_pts_vao);
-    glPointSize(6.0f);
     glDrawArrays(GL_POINTS, 0, n + 1);
 }
 
 void BezierDrawer::DrawControlPolygon()
 {
     glBindVertexArray(ctrl_pts_vao);
-    glLineWidth(1.0f);
     glDrawArrays(GL_LINE_STRIP, 0, n + 1);
 }
 
 void BezierDrawer::DrawBezierCurve()
 {
     glBindVertexArray(interp_pts_vao);
-    glLineWidth(3.0f);
     glDrawArrays(GL_LINE_STRIP, 0, interp);
 }
 

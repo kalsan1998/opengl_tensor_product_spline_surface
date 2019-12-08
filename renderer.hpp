@@ -40,8 +40,11 @@ private:
     glm::mat4 model;
 
     float zoom;
+    float scale;
     float theta;
     float phi;
+
+    bool free_mode;
 
     BSplineDrawer bspline;
     BezierDrawer bezier;

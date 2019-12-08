@@ -34,14 +34,12 @@ BSplineDrawer::BSplineDrawer() : interp(60), n(5), m(8)
 void BSplineDrawer::DrawBSplineCurve()
 {
     glBindVertexArray(curve_points_vao);
-    glLineWidth(3.0);
     glDrawArrays(GL_LINE_STRIP, 0, interp);
 }
 
 void BSplineDrawer::DrawKnots()
 {
     glBindVertexArray(knot_points_vao);
-    glPointSize(5.0);
     glDrawArrays(GL_POINTS, 0, m + 1 - (2 * deg));
 }
 

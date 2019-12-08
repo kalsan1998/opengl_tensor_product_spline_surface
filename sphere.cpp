@@ -66,8 +66,6 @@ void SphereDrawer::LoadVertices()
 void SphereDrawer::DrawSphere()
 {
     glBindVertexArray(sphere_vao);
-    glPointSize(1.0f);
-    glLineWidth(1.0f);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
     glDrawElements(draw_mode, rings * sectors * 4, GL_UNSIGNED_SHORT, 0);
 }
