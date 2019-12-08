@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-BSplineDrawer::BSplineDrawer() : interp(60), n(5), m(8)
+BSplineDrawer::BSplineDrawer() : interp(100), n(6), m(9)
 {
     glGenVertexArrays(1, &curve_points_vao);
     glBindVertexArray(curve_points_vao);
@@ -18,6 +18,13 @@ BSplineDrawer::BSplineDrawer() : interp(60), n(5), m(8)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
+    glGenVertexArrays(1, &control_points_vao);
+    glBindVertexArray(control_points_vao);
+    glGenBuffers(1, &control_points_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, control_points_vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
     control_points = {
         glm::vec3(-1.0f, -1.0f, 0.0f),
         glm::vec3(-0.25f, 0.75f, 0.0f),
@@ -25,10 +32,12 @@ BSplineDrawer::BSplineDrawer() : interp(60), n(5), m(8)
         glm::vec3(0.8f, 0.0f, 0.0f),
         glm::vec3(0.7f, 0.6f, 0.0f),
         glm::vec3(0.3f, 0.2f, 0.0f),
+        glm::vec3(0.0f, 0.1f, 0.0f),
     };
     deg = m - n - 1;
-    knots = {0.0f, 0.0f, 0.2f, 0.4f, 0.5f, 0.6f, 0.8f, 1.0f, 1.0f};
+    knots = {0.0f, 0.0f, 0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f, 1.0f, 1.0f};
     LoadInterpolatedPoints();
+    LoadControlPoints();
 }
 
 void BSplineDrawer::DrawBSplineCurve()
@@ -41,6 +50,18 @@ void BSplineDrawer::DrawKnots()
 {
     glBindVertexArray(knot_points_vao);
     glDrawArrays(GL_POINTS, 0, m + 1 - (2 * deg));
+}
+
+void BSplineDrawer::DrawControlPoints()
+{
+    glBindVertexArray(control_points_vao);
+    glDrawArrays(GL_POINTS, 0, n + 1);
+}
+
+void BSplineDrawer::DrawControlPolygon()
+{
+    glBindVertexArray(control_points_vao);
+    glDrawArrays(GL_LINE_STRIP, 0, n + 1);
 }
 
 void BSplineDrawer::LoadInterpolatedPoints()
@@ -57,7 +78,7 @@ void BSplineDrawer::LoadInterpolatedPoints()
         interp_vertices[u] = c_u;
     }
     std::vector<glm::vec3> knot_values;
-    for (int j = deg; j <= m - deg; ++j)
+    for (int j = deg; j < m - deg; ++j)
     {
         float u = knots[j];
         glm::vec3 c_u(0.0f);
@@ -67,12 +88,25 @@ void BSplineDrawer::LoadInterpolatedPoints()
         }
         knot_values.push_back(c_u);
     }
+    glm::vec3 c_u(0.0f);
+    for (int i = 0; i < n + 1; ++i)
+    {
+        c_u += BSplineBasisFn(knots[m - deg] - 0.001, i, deg) * control_points[i]; // Last knot technically isn't in the domain.
+    }
+    knot_values.push_back(c_u);
 
     glBindBuffer(GL_ARRAY_BUFFER, curve_points_vbo);
     glBufferData(GL_ARRAY_BUFFER, interp_vertices.size() * 3 * sizeof(float), &interp_vertices[0], GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, knot_points_vbo);
     glBufferData(GL_ARRAY_BUFFER, knot_values.size() * 3 * sizeof(float), &knot_values[0], GL_STATIC_DRAW);
 }
+
+void BSplineDrawer::LoadControlPoints()
+{
+    glBindBuffer(GL_ARRAY_BUFFER, control_points_vbo);
+    glBufferData(GL_ARRAY_BUFFER, control_points.size() * 3 * sizeof(float), &control_points[0], GL_STATIC_DRAW);
+}
+
 // TODO: DP
 float BSplineDrawer::BSplineBasisFn(float u, int i, int p)
 {

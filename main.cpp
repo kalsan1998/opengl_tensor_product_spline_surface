@@ -56,13 +56,13 @@ int main(int argc, char **argv)
     renderer = std::make_unique<Renderer>(shader_program);
     glfwSetScrollCallback(window, MouseScroll);
     glfwSetKeyCallback(window, KeyCallback);
-    do
+    while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+           glfwWindowShouldClose(window) == 0)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         renderer->Draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-             glfwWindowShouldClose(window) == 0);
+    }
 }

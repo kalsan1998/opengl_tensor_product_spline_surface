@@ -17,6 +17,7 @@ public:
 
 private:
     void LoadInterpolatedPoints();
+    void LoadControlPoints();
     float BSplineBasisFn(float u, int i, int p);
 
     int interp;
@@ -31,6 +32,9 @@ private:
 
     GLuint knot_points_vao;
     GLuint knot_points_vbo;
+
+    GLuint control_points_vao;
+    GLuint control_points_vbo;
 };
 
 #endif
