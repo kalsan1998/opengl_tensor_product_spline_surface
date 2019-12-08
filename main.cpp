@@ -13,6 +13,11 @@ void MouseScroll(GLFWwindow *window, double x, double y)
     renderer->MouseScroll(y);
 }
 
+void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    renderer->ProcessKeysCallback(key, action);
+}
+
 int main(int argc, char **argv)
 {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -49,11 +54,10 @@ int main(int argc, char **argv)
     glUseProgram(shader_program);
     renderer = new Renderer(shader_program);
     glfwSetScrollCallback(window, MouseScroll);
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetKeyCallback(window, KeyCallback);
     do
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        renderer->ProcessKeys(window);
         renderer->Draw();
 
         glfwSwapBuffers(window);

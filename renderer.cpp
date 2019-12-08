@@ -4,7 +4,7 @@
 
 #include "glm/ext.hpp"
 
-Renderer::Renderer(GLuint program) : program(program), zoom(5.0f), theta(0.0f), phi(0.0f)
+Renderer::Renderer(GLuint program) : draw_object(DRAW_SPHERE), program(program), zoom(5.0f), theta(0.0f), phi(0.0f)
 {
     color_location = glGetUniformLocation(program, "uni_color");
 
@@ -23,7 +23,7 @@ Renderer::Renderer(GLuint program) : program(program), zoom(5.0f), theta(0.0f), 
         0.5f, -0.25f, 0.0f,
         1.0f, 1.0f, 0.0f};
     bezier.SetControlPoints(control, 4);
-    sphere.SetAttributes(0.5f, 12, 36);
+    sphere.SetAttributes(1.0f, 12, 36);
 }
 
 void Renderer::Draw()
@@ -37,27 +37,37 @@ void Renderer::Draw()
     DrawSphere();
 }
 
-void Renderer::ProcessKeys(GLFWwindow *window)
+void Renderer::ProcessKeysCallback(int key, int action)
 {
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (action == GLFW_RELEASE)
+        return;
+    if (key == GLFW_KEY_DOWN)
     {
         phi += 0.1f;
         model = glm::rotate(model, 0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
     }
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    if (key == GLFW_KEY_UP)
     {
         phi -= 0.1f;
         model = glm::rotate(model, -0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
     }
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    if (key == GLFW_KEY_LEFT)
     {
         theta -= 0.1f;
         model = glm::rotate(model, -0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
     }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    if (key == GLFW_KEY_RIGHT)
     {
         theta += 0.1f;
         model = glm::rotate(model, 0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
+    }
+    if (draw_object == DRAW_SPHERE)
+    {
+        sphere.ProcessKeys(key, action);
+    }
+    if (key == GLFW_KEY_S)
+    {
+        draw_object = DRAW_SPHERE;
     }
 }
 

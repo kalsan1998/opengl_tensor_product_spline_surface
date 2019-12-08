@@ -9,12 +9,17 @@
 #include "bezier.hpp"
 #include "sphere.hpp"
 
+enum DrawObject
+{
+    DRAW_SPHERE,
+};
+
 class Renderer
 {
 public:
     Renderer(GLuint program);
     void Draw();
-    void ProcessKeys(GLFWwindow *window);
+    void ProcessKeysCallback(int key, int action);
     void MouseScroll(double y);
 
 private:
@@ -23,6 +28,8 @@ private:
 
     GLuint program;
     GLuint color_location;
+
+    DrawObject draw_object;
 
     glm::mat4 projection;
     glm::mat4 view;

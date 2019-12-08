@@ -1,9 +1,11 @@
 #include "sphere.hpp"
 
 #include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
+
 #include <iostream>
 
-SphereDrawer::SphereDrawer() : radius(0.0), rings(0), sectors(0)
+SphereDrawer::SphereDrawer() : radius(0.0), rings(0), sectors(0), draw_mode(GL_POINTS)
 {
     glGenVertexArrays(1, &sphere_vao);
     glBindVertexArray(sphere_vao);
@@ -72,5 +74,45 @@ void SphereDrawer::DrawSphere()
 {
     glBindVertexArray(sphere_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
-    glDrawElements(GL_LINE_STRIP, rings * sectors * 4, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(draw_mode, rings * sectors * 4, GL_UNSIGNED_SHORT, 0);
+}
+
+void SphereDrawer::ProcessKeys(int key, int action)
+{
+    if (key == GLFW_KEY_P)
+    {
+        draw_mode = GL_POINTS;
+    }
+    if (key == GLFW_KEY_Q)
+    {
+        draw_mode = GL_QUADS;
+    }
+    if (key == GLFW_KEY_L)
+    {
+        draw_mode = GL_LINE_STRIP;
+    }
+    if (key == GLFW_KEY_W)
+    {
+        draw_mode = GL_POINTS;
+    }
+    if (key == GLFW_KEY_EQUAL)
+    {
+        sectors++;
+        LoadVertices();
+    }
+    if (key == GLFW_KEY_MINUS)
+    {
+        sectors = std::max(4, sectors - 1);
+        LoadVertices();
+    }
+    if (key == GLFW_KEY_0)
+    {
+        rings++;
+        LoadVertices();
+    }
+    if (key == GLFW_KEY_9)
+    {
+        rings = std::max(3, rings - 1);
+        LoadVertices();
+    }
 }
