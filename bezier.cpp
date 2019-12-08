@@ -60,7 +60,6 @@ float BezierDrawer::BasisFn(float u, int i)
 
 void BezierDrawer::LoadControlPoints()
 {
-    glBindVertexArray(ctrl_pts_vao);
     glBindBuffer(GL_ARRAY_BUFFER, ctrl_vbo);
     glBufferData(GL_ARRAY_BUFFER, control_points.size() * 3 * sizeof(float), &control_points[0], GL_STATIC_DRAW);
 }
@@ -79,7 +78,6 @@ void BezierDrawer::LoadInterpolatedPoints()
         interp_vertices[u] = c_u;
     }
 
-    glBindVertexArray(interp_pts_vao);
     glBindBuffer(GL_ARRAY_BUFFER, interp_vbo);
     glBufferData(GL_ARRAY_BUFFER, interp_vertices.size() * 3 * sizeof(float), &interp_vertices[0], GL_STATIC_DRAW);
 }

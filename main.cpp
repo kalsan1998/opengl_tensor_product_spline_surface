@@ -6,8 +6,9 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <memory>
 
-Renderer *renderer;
+std::unique_ptr<Renderer> renderer;
 void MouseScroll(GLFWwindow *window, double x, double y)
 {
     renderer->MouseScroll(y);
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
 
     GLuint shader_program = LoadShader("shaders/vertex_shader.vs", "shaders/fragment_shader.fs");
     glUseProgram(shader_program);
-    renderer = new Renderer(shader_program);
+    renderer = std::make_unique<Renderer>(shader_program);
     glfwSetScrollCallback(window, MouseScroll);
     glfwSetKeyCallback(window, KeyCallback);
     do
@@ -64,6 +65,4 @@ int main(int argc, char **argv)
         glfwPollEvents();
     } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
              glfwWindowShouldClose(window) == 0);
-
-    delete renderer;
 }

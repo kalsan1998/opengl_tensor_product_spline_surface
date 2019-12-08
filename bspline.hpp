@@ -11,6 +11,9 @@ class BSplineDrawer
 public:
     BSplineDrawer();
     void DrawBSplineCurve();
+    void DrawKnots();
+    void DrawControlPoints();
+    void DrawControlPolygon();
 
 private:
     void LoadInterpolatedPoints();
@@ -25,6 +28,9 @@ private:
 
     GLuint curve_points_vao;
     GLuint curve_points_vbo;
+
+    GLuint knot_points_vao;
+    GLuint knot_points_vbo;
 };
 
 #endif

@@ -99,29 +99,33 @@ void Renderer::MouseScroll(double y)
 
 void Renderer::DrawBezierCurve()
 {
-    float polygon_color[3] = {1.0f, 0.0f, 0.0f}; // Red
+    float polygon_color[3] = {1.0f, 0.0f, 0.0f};
     glUniform3fv(color_location, 1, polygon_color);
     bezier.DrawControlPolygon();
 
-    float curve_color[3] = {0.0f, 0.0f, 1.0f}; // Blue
+    float curve_color[3] = {0.0f, 0.0f, 1.0f};
     glUniform3fv(color_location, 1, curve_color);
     bezier.DrawBezierCurve();
 
-    float point_color[3] = {1.0f, 0.0f, 0.0f}; // Red
+    float point_color[3] = {1.0f, 0.0f, 0.0f};
     glUniform3fv(color_location, 1, point_color);
     bezier.DrawControlPoints();
 }
 
 void Renderer::DrawBSplineCurve()
 {
-    float curve_color[3] = {0.0f, 0.0f, 1.0f}; // Blue
+    float curve_color[3] = {0.0f, 0.0f, 1.0f};
     glUniform3fv(color_location, 1, curve_color);
     bspline.DrawBSplineCurve();
+
+    float knot_color[3] = {0.0f, 1.0f, 0.0f};
+    glUniform3fv(color_location, 1, knot_color);
+    bspline.DrawKnots();
 }
 
 void Renderer::DrawSphere()
 {
-    float sphere_color[3] = {1.0f, 0.0f, 0.0f}; // Red
+    float sphere_color[3] = {1.0f, 0.0f, 0.0f};
     glUniform3fv(color_location, 1, sphere_color);
     sphere.DrawSphere();
 }

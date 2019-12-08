@@ -56,7 +56,6 @@ void SphereDrawer::LoadVertices()
             indices[base + 3] = (r + 1) * sectors + s;
         }
     }
-    glBindVertexArray(sphere_vao);
     glBindBuffer(GL_ARRAY_BUFFER, sphere_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
 
