@@ -13,17 +13,23 @@ class BSplineSurfaceDrawer
 public:
     BSplineSurfaceDrawer();
     void DrawBSplineSurface();
+    void DrawControlPoints();
+    void DrawControlNet();
 
 private:
     int interp;
 
     void LoadInterpolatedPoints();
     void LoadControlPoints();
-    float BSplineBasisFn(float u, int i, int p, std::vector<float> &knots);
+    float BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots);
+
+    GLuint control_points_vao;
+    GLuint control_points_vbo;
+    GLuint control_element_vbo;
 
     GLuint interpolated_points_vao;
     GLuint interpolated_points_vbo;
-    GLuint element_vbo;
+    GLuint interpolated_element_vbo;
 
     int m; // m + 1 rows of control points;
     int n; // n + 1 columns of control points;

@@ -84,10 +84,6 @@ void SphereDrawer::ProcessKeys(int key, int action)
     {
         draw_mode = GL_LINE_STRIP;
     }
-    if (key == GLFW_KEY_W)
-    {
-        draw_mode = GL_POINTS;
-    }
     if (key == GLFW_KEY_EQUAL)
     {
         sectors++;

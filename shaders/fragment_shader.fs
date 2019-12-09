@@ -7,7 +7,7 @@ out vec4 color;
 void main() {
   vec3 light_color = vec3(1.0, 1.0, 1.0);
 
-  float ambient_strength = 0.4;
+  float ambient_strength = 0.3;
   vec3 ambient = ambient_strength * light_color;
 
   vec3 light_pos = vec3(2.0, 2.0, 2.0);

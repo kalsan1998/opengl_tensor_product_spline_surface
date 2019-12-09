@@ -11,12 +11,14 @@
 std::unique_ptr<Renderer> renderer;
 void MouseScroll(GLFWwindow *window, double x, double y)
 {
-    renderer->MouseScroll(y);
+    if (renderer)
+        renderer->MouseScroll(y);
 }
 
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    renderer->ProcessKeysCallback(key, action);
+    if (renderer)
+        renderer->ProcessKeysCallback(key, action);
 }
 
 int main(int argc, char **argv)
@@ -60,7 +62,8 @@ int main(int argc, char **argv)
            glfwWindowShouldClose(window) == 0)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        renderer->Draw();
+        if (renderer)
+            renderer->Draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

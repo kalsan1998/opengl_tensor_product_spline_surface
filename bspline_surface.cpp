@@ -14,50 +14,87 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer() : interp(10)
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
-    glGenBuffers(1, &element_vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
+    glGenBuffers(1, &interpolated_element_vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, interpolated_element_vbo);
+
+    glGenVertexArrays(1, &control_points_vao);
+    glBindVertexArray(control_points_vao);
+    glGenBuffers(1, &control_points_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, control_points_vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    glGenBuffers(1, &control_element_vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, control_element_vbo);
 
     control_points = {
         {
-            glm::vec3(-1.0f, -1.0f, 0.0f),
-            glm::vec3(-0.25f, 0.75f, 0.0f),
+            glm::vec3(-1.0f, -0.3f, 0.0f),
+            glm::vec3(-0.25f, 0.25f, 0.0f),
+            glm::vec3(0.0f, 0.0f, 0.0f),
             glm::vec3(0.25f, 0.0f, 0.0f),
             glm::vec3(1.0f, 0.2f, 0.0f),
         },
         {
             glm::vec3(-1.0f, -0.5f, 0.25f),
             glm::vec3(-0.25f, -0.5f, 0.25f),
+            glm::vec3(0.1f, 0.1f, 0.25f),
             glm::vec3(0.25f, 0.3f, 0.25f),
             glm::vec3(1.0f, 0.1f, 0.25f),
         },
         {
             glm::vec3(-1.0f, -0.2f, 0.5f),
             glm::vec3(-0.25f, -0.75f, 0.5f),
+            glm::vec3(-0.1f, 0.3f, 0.5f),
             glm::vec3(0.25f, 0.4f, 0.5f),
             glm::vec3(1.0f, 0.1f, 0.5f),
         },
         {
             glm::vec3(-1.0f, -0.2f, 0.75f),
             glm::vec3(-0.25f, -0.75f, 0.75f),
+            glm::vec3(-0.2f, 0.0f, 0.75f),
             glm::vec3(0.25f, 0.4f, 0.75f),
             glm::vec3(1.0f, 0.1f, 0.75f),
         },
+        {
+            glm::vec3(-1.0f, -0.2f, 1.0f),
+            glm::vec3(-0.25f, -0.75f, 1.0f),
+            glm::vec3(-0.2f, 0.0f, 1.0f),
+            glm::vec3(0.25f, 0.4f, 1.0f),
+            glm::vec3(1.0f, 0.1f, 1.0f),
+        },
     };
-    U = {0.0f, 0.0f, 0.25f, 0.5f, 0.75f, 1.0f, 1.0f};
-    V = {0.0f, 0.0f, 0.25f, 0.5f, 0.75f, 1.0f, 1.0f};
+    U = {0.0f, 0.0f, 0.0f, 0.25f, 0.5f, 0.75f, 1.0f, 1.0f, 1.0f};
+    V = {0.0f, 0.0f, 0.0f, 0.25f, 0.5f, 0.75f, 1.0f, 1.0f, 1.0f};
     m = control_points.size() - 1;
     n = control_points[0].size() - 1;
     h = U.size() - 1;
     k = V.size() - 1;
 
     LoadInterpolatedPoints();
+    LoadControlPoints();
 }
 
 void BSplineSurfaceDrawer::DrawBSplineSurface()
 {
     glBindVertexArray(interpolated_points_vao);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, interpolated_element_vbo);
     glDrawElements(GL_TRIANGLES, (interp - 1) * (interp - 1) * 6, GL_UNSIGNED_SHORT, 0);
+}
+
+void BSplineSurfaceDrawer::DrawControlPoints()
+{
+    glBindVertexArray(control_points_vao);
+    glDrawArrays(GL_POINTS, 0, (n + 1) * (m + 1));
+}
+
+void BSplineSurfaceDrawer::DrawControlNet()
+{
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBindVertexArray(control_points_vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, control_element_vbo);
+    glDrawElements(GL_QUADS, m * n * 4, GL_UNSIGNED_SHORT, 0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 // TODO: Optimize accoridng to https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bspline-de-boor.html
@@ -109,12 +146,42 @@ void BSplineSurfaceDrawer::LoadInterpolatedPoints()
             indices[base + 5] = indices[base + 2] + 1;
         }
     }
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, interpolated_element_vbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+}
+
+void BSplineSurfaceDrawer::LoadControlPoints()
+{
+    std::vector<glm::vec3> points;
+    int i = 0;
+    for (auto &u : control_points)
+    {
+        for (auto v : u)
+        {
+            points.push_back(v);
+        }
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, control_points_vbo);
+    glBufferData(GL_ARRAY_BUFFER, points.size() * 3 * sizeof(float), &points[0], GL_STATIC_DRAW);
+
+    std::vector<GLushort> indices(m * n * 4);
+    for (int i = 0; i < m; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            int base = 4 * ((i * n) + j);
+            indices[base] = i * (n + 1) + j;
+            indices[base + 1] = i * (n + 1) + j + 1;
+            indices[base + 2] = (i + 1) * (n + 1) + j + 1;
+            indices[base + 3] = (i + 1) * (n + 1) + j;
+        }
+    }
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, control_element_vbo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 }
 
 // TODO: DP
-float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, std::vector<float> &knots)
+float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots)
 {
     if (p == 0)
     {

@@ -91,6 +91,16 @@ void Renderer::DrawBSplineSurface()
     glUniform3fv(color_location, 1, surface_color);
     glPointSize(1.0f * scale);
     bspline_surface.DrawBSplineSurface();
+
+    float point_color[3] = {0.9f, 0.5f, 0.0f};
+    glUniform3fv(color_location, 1, point_color);
+    glPointSize(5.0f * scale);
+    bspline_surface.DrawControlPoints();
+
+    float net_color[3] = {1.0f, 0.0f, 0.0f};
+    glUniform3fv(color_location, 1, net_color);
+    glLineWidth(1.0f * scale);
+    bspline_surface.DrawControlNet();
 }
 
 void Renderer::DrawSphere()
