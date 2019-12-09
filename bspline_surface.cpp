@@ -9,8 +9,10 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer() : interp(10)
     glBindVertexArray(interpolated_points_vao);
     glGenBuffers(1, &interpolated_points_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, interpolated_points_vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void *)(sizeof(float) * 3));
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
     glGenBuffers(1, &element_vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
@@ -58,11 +60,12 @@ void BSplineSurfaceDrawer::DrawBSplineSurface()
     glDrawElements(GL_TRIANGLES, (interp - 1) * (interp - 1) * 6, GL_UNSIGNED_SHORT, 0);
 }
 
+// TODO: Optimize accoridng to https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bspline-de-boor.html
 void BSplineSurfaceDrawer::LoadInterpolatedPoints()
 {
     int p = h - m - 1;
     int q = k - n - 1;
-    std::vector<glm::vec3> interp_vertices(interp * interp);
+    std::vector<glm::vec3> interp_vertices(interp * interp * 2);
     for (int u = 0; u < interp; ++u)
     {
         float norm_u = U[p] + ((float)u / (float)interp) * (U[m + 1] - U[p]);
@@ -70,14 +73,23 @@ void BSplineSurfaceDrawer::LoadInterpolatedPoints()
         {
             float norm_v = V[q] + ((float)v / (float)interp) * (V[n + 1] - V[q]);
             glm::vec3 c_u(0.0f);
+            glm::vec3 du(0.0f);
+            glm::vec3 dv(0.0f);
             for (int i = 0; i < m + 1; ++i)
             {
+                float N_u = BSplineBasisFn(norm_u, i, p, U);
                 for (int j = 0; j < n + 1; ++j)
                 {
-                    c_u += BSplineBasisFn(norm_u, i, p, U) * BSplineBasisFn(norm_v, j, q, V) * control_points[i][j];
+                    c_u += N_u * BSplineBasisFn(norm_v, j, q, V) * control_points[i][j];
+                    if (i != m)
+                        du += BSplineBasisFn(norm_u, i + 1, p - 1, U) * (p / (U[i + p + 1] - U[i + 1])) * (control_points[i + 1][j] - control_points[i][j]);
+                    if (j != n)
+                        dv += BSplineBasisFn(norm_v, j + 1, q - 1, V) * (q / (V[j + q + 1] - V[j + 1])) * (control_points[i][j + 1] - control_points[i][j]);
                 }
             }
-            interp_vertices[(u * interp) + v] = c_u;
+            glm::vec3 normal = glm::cross(du, dv);
+            interp_vertices[(u * interp * 2) + v * 2] = c_u;
+            interp_vertices[(u * interp * 2) + v * 2 + 1] = normal;
         }
     }
     glBindBuffer(GL_ARRAY_BUFFER, interpolated_points_vbo);
