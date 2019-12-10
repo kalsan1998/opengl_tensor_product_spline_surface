@@ -5,8 +5,10 @@
 
 #include <iostream>
 
-SphereDrawer::SphereDrawer() : radius(1.0f), rings(12), sectors(36), draw_mode(GL_POINTS)
+SphereDrawer::SphereDrawer(GLuint program) : program(program), radius(1.0f), rings(12), sectors(36), draw_mode(GL_POINTS)
 {
+    color_location = glGetUniformLocation(program, "uni_color");
+
     glGenVertexArrays(1, &sphere_vao);
     glBindVertexArray(sphere_vao);
     glGenBuffers(1, &sphere_vbo);
@@ -63,8 +65,10 @@ void SphereDrawer::LoadVertices()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices) - sizeof(GLushort), &indices[0], GL_STATIC_DRAW);
 }
 
-void SphereDrawer::DrawSphere()
+void SphereDrawer::Draw()
 {
+    float sphere_color[3] = {1.0f, 0.0f, 0.0f};
+    glUniform3fv(color_location, 1, sphere_color);
     glBindVertexArray(sphere_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_vbo);
     glDrawElements(draw_mode, rings * sectors * 4, GL_UNSIGNED_SHORT, 0);

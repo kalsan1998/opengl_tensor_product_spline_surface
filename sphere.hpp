@@ -10,12 +10,15 @@ class GLFWwindow;
 class SphereDrawer
 {
 public:
-    SphereDrawer();
+    SphereDrawer(GLuint program);
     void ProcessKeys(int key, int action);
-    void DrawSphere();
+    void Draw();
 
 private:
     void LoadVertices();
+
+    GLuint program;
+    GLuint color_location;
 
     float radius;
     int rings;

@@ -24,8 +24,6 @@ public:
     void MouseScroll(double y);
 
 private:
-    void DrawSphere();
-
     GLuint program;
     GLuint color_location;
 

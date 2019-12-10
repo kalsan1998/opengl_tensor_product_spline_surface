@@ -1,9 +1,11 @@
 #include "bspline_surface.hpp"
 
+#include <GLFW/glfw3.h>
 #include <iostream>
 
-BSplineSurfaceDrawer::BSplineSurfaceDrawer() : interp(10)
+BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : program(program), interp(10)
 {
+    color_location = glGetUniformLocation(program, "uni_color");
 
     glGenVertexArrays(1, &interpolated_points_vao);
     glBindVertexArray(interpolated_points_vao);
@@ -79,18 +81,15 @@ void BSplineSurfaceDrawer::Draw()
 {
     float surface_color[3] = {0.7f, 0.7f, 0.0f};
     glUniform3fv(color_location, 1, surface_color);
-    glPointSize(1.0f * scale);
-    bspline_surface.DrawBSplineSurface();
+    DrawBSplineSurface();
 
     float point_color[3] = {0.9f, 0.5f, 0.0f};
     glUniform3fv(color_location, 1, point_color);
-    glPointSize(5.0f * scale);
-    bspline_surface.DrawControlPoints();
+    DrawControlPoints();
 
     float net_color[3] = {1.0f, 0.0f, 0.0f};
     glUniform3fv(color_location, 1, net_color);
-    glLineWidth(1.0f * scale);
-    bspline_surface.DrawControlNet();
+    DrawControlNet();
 }
 
 void BSplineSurfaceDrawer::DrawBSplineSurface()
@@ -212,4 +211,10 @@ float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, const std::vec
     float n_2 = BSplineBasisFn(u, i + 1, p - 1, knots);
     float term_2 = n_2 == 0 ? 0 : ((knots[i + p + 1] - u) / (knots[i + p + 1] - knots[i + 1])) * n_2;
     return term_1 + term_2;
+}
+
+void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
+{
+    if (action == GLFW_RELEASE)
+        return;
 }

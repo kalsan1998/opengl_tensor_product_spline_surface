@@ -11,7 +11,7 @@ typedef std::vector<std::vector<glm::vec3>> Grid;
 class BSplineSurfaceDrawer
 {
 public:
-    BSplineSurfaceDrawer();
+    BSplineSurfaceDrawer(GLuint program);
     void Draw();
     void ProcessKeys(int key, int action);
 
@@ -23,6 +23,8 @@ private:
     void LoadInterpolatedPoints();
     void LoadControlPoints();
     float BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots);
+
+    GLuint program;
 
     int interp;
 

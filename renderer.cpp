@@ -4,7 +4,7 @@
 
 #include "glm/ext.hpp"
 
-Renderer::Renderer(GLuint program) : draw_object(DRAW_SPHERE), program(program), zoom(5.0f), scale(1.0f), theta(0.0f), phi(0.0f), free_mode(false)
+Renderer::Renderer(GLuint program) : draw_object(DRAW_SPHERE), program(program), zoom(5.0f), scale(1.0f), theta(0.0f), phi(0.0f), free_mode(false), sphere(program), bspline_surface(program)
 {
     color_location = glGetUniformLocation(program, "uni_color");
 
@@ -29,7 +29,7 @@ void Renderer::Draw()
     switch (draw_object)
     {
     case DRAW_SPHERE:
-        DrawSphere();
+        sphere.Draw();
         break;
     case DRAW_BSPLINE_SURFACE:
         bspline_surface.Draw();
@@ -37,15 +37,6 @@ void Renderer::Draw()
     default:
         break;
     }
-}
-
-void Renderer::DrawSphere()
-{
-    float sphere_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, sphere_color);
-    glPointSize(1.0f * scale);
-    glLineWidth(1.0f * scale);
-    sphere.DrawSphere();
 }
 
 void Renderer::ProcessKeysCallback(int key, int action)
