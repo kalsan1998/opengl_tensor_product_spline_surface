@@ -28,79 +28,15 @@ void Renderer::Draw()
     glUniformMatrix4fv(projection_location, 1, GL_FALSE, &(projection)[0][0]);
     switch (draw_object)
     {
-    case DRAW_BEZIER:
-        DrawBezierCurve();
-        break;
     case DRAW_SPHERE:
         DrawSphere();
         break;
-    case DRAW_BSPLINE:
-        DrawBSplineCurve();
-        break;
     case DRAW_BSPLINE_SURFACE:
-        DrawBSplineSurface();
+        bspline_surface.Draw();
         break;
     default:
         break;
     }
-}
-void Renderer::DrawBezierCurve()
-{
-    float polygon_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, polygon_color);
-    glLineWidth(1.0f * scale);
-    bezier.DrawControlPolygon();
-
-    float curve_color[3] = {0.0f, 0.0f, 1.0f};
-    glUniform3fv(color_location, 1, curve_color);
-    glLineWidth(3.0f * scale);
-    bezier.DrawBezierCurve();
-
-    float point_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, point_color);
-    glPointSize(5.0f * scale);
-    bezier.DrawControlPoints();
-}
-
-void Renderer::DrawBSplineCurve()
-{
-    float curve_color[3] = {0.0f, 0.0f, 1.0f};
-    glUniform3fv(color_location, 1, curve_color);
-    glLineWidth(3.0 * scale);
-    bspline.DrawBSplineCurve();
-
-    float knot_color[3] = {0.0f, 1.0f, 0.0f};
-    glUniform3fv(color_location, 1, knot_color);
-    glPointSize(5.0f * scale);
-    bspline.DrawKnots();
-
-    float polygon_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, polygon_color);
-    glLineWidth(1.0f * scale);
-    bspline.DrawControlPolygon();
-
-    float point_color[3] = {0.9f, 0.36f, 0.0f};
-    glUniform3fv(color_location, 1, point_color);
-    glPointSize(5.0f * scale);
-    bspline.DrawControlPoints();
-}
-
-void Renderer::DrawBSplineSurface()
-{
-    float surface_color[3] = {0.7f, 0.7f, 0.0f};
-    glUniform3fv(color_location, 1, surface_color);
-    glPointSize(1.0f * scale);
-    bspline_surface.DrawBSplineSurface();
-
-    float point_color[3] = {0.9f, 0.5f, 0.0f};
-    glUniform3fv(color_location, 1, point_color);
-    glPointSize(5.0f * scale);
-    bspline_surface.DrawControlPoints();
-
-    float net_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, net_color);
-    glLineWidth(1.0f * scale);
-    bspline_surface.DrawControlNet();
 }
 
 void Renderer::DrawSphere()
@@ -172,19 +108,15 @@ void Renderer::ProcessKeysCallback(int key, int action)
     {
         sphere.ProcessKeys(key, action);
     }
+    if (draw_object == DRAW_BSPLINE_SURFACE)
+    {
+        bspline_surface.ProcessKeys(key, action);
+    }
     if (key == GLFW_KEY_S)
     {
         draw_object = DRAW_SPHERE;
     }
-    if (key == GLFW_KEY_Z)
-    {
-        draw_object = DRAW_BEZIER;
-    }
     if (key == GLFW_KEY_B)
-    {
-        draw_object = DRAW_BSPLINE;
-    }
-    if (key == GLFW_KEY_T)
     {
         draw_object = DRAW_BSPLINE_SURFACE;
     }
