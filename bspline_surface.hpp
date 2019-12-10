@@ -6,6 +6,13 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
+enum SurfaceDrawMode
+{
+    SURFACE_FILL,
+    SURFACE_MESH,
+    SURFACE_POINTS,
+};
+
 typedef std::vector<std::vector<glm::vec3>> Grid;
 
 class BSplineSurfaceDrawer
@@ -17,10 +24,12 @@ public:
 
 private:
     void DrawBSplineSurface();
+    void DrawKnots();
     void DrawControlPoints();
     void DrawControlNet();
 
     void LoadInterpolatedPoints();
+    void LoadKnots();
     void LoadControlPoints();
     float BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots);
 
@@ -38,6 +47,9 @@ private:
     GLuint interpolated_points_vbo;
     GLuint interpolated_element_vbo;
 
+    GLuint knot_vao;
+    GLuint knot_vbo;
+
     int m; // m + 1 rows of control points;
     int n; // n + 1 columns of control points;
     Grid control_points;
@@ -47,6 +59,10 @@ private:
 
     int k;                // k + 1 knots in the v direction;
     std::vector<float> V; // knots in the v direction;
+
+    bool draw_control_net;
+
+    SurfaceDrawMode surface_draw_mode;
 };
 
 #endif

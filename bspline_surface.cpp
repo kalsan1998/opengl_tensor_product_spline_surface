@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : program(program), interp(10)
+BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : program(program), interp(25), draw_control_net(true), surface_draw_mode(SURFACE_MESH)
 {
     color_location = glGetUniformLocation(program, "uni_color");
 
@@ -14,7 +14,6 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : program(program), i
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void *)(sizeof(float) * 3));
     glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
 
     glGenBuffers(1, &interpolated_element_vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, interpolated_element_vbo);
@@ -28,6 +27,13 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : program(program), i
 
     glGenBuffers(1, &control_element_vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, control_element_vbo);
+
+    glGenVertexArrays(1, &knot_vao);
+    glBindVertexArray(knot_vao);
+    glGenBuffers(1, &knot_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, knot_vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
 
     control_points = {
         {
@@ -66,52 +72,85 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : program(program), i
             glm::vec3(1.0f, 0.1f, 1.0f),
         },
     };
-    U = {0.0f, 0.0f, 0.0f, 0.25f, 0.5f, 0.75f, 1.0f, 1.0f, 1.0f};
-    V = {0.0f, 0.0f, 0.0f, 0.25f, 0.5f, 0.75f, 1.0f, 1.0f, 1.0f};
+    U = {0.0f, 0.0f, 0.0f, 0.25f, 0.75f, 1.0f, 1.0f, 1.0f};
+    V = {0.0f, 0.0f, 0.0f, 0.25f, 0.75f, 1.0f, 1.0f, 1.0f};
     m = control_points.size() - 1;
     n = control_points[0].size() - 1;
     h = U.size() - 1;
     k = V.size() - 1;
+    U[h] += 0.0001;
+    V[k] += 0.0001;
 
     LoadInterpolatedPoints();
+    LoadKnots();
     LoadControlPoints();
 }
 
 void BSplineSurfaceDrawer::Draw()
 {
-    float surface_color[3] = {0.7f, 0.7f, 0.0f};
-    glUniform3fv(color_location, 1, surface_color);
     DrawBSplineSurface();
+    DrawKnots();
 
-    float point_color[3] = {0.9f, 0.5f, 0.0f};
-    glUniform3fv(color_location, 1, point_color);
-    DrawControlPoints();
-
-    float net_color[3] = {1.0f, 0.0f, 0.0f};
-    glUniform3fv(color_location, 1, net_color);
-    DrawControlNet();
+    if (draw_control_net)
+    {
+        DrawControlPoints();
+        DrawControlNet();
+    }
 }
 
 void BSplineSurfaceDrawer::DrawBSplineSurface()
 {
+    float surface_color[3] = {0.7f, 0.7f, 0.0f};
+    glUniform3fv(color_location, 1, surface_color);
     glBindVertexArray(interpolated_points_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, interpolated_element_vbo);
+    if (surface_draw_mode == SURFACE_FILL)
+    {
+        glEnableVertexAttribArray(1);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    else if (surface_draw_mode == SURFACE_MESH)
+    {
+        glDisableVertexAttribArray(1);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else if (surface_draw_mode == SURFACE_POINTS)
+    {
+        glDisableVertexAttribArray(1);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+    }
     glDrawElements(GL_TRIANGLES, (interp - 1) * (interp - 1) * 6, GL_UNSIGNED_SHORT, 0);
 }
 
 void BSplineSurfaceDrawer::DrawControlPoints()
 {
+    float point_color[3] = {0.9f, 0.5f, 0.0f};
+    glUniform3fv(color_location, 1, point_color);
+    glPointSize(5.0f);
     glBindVertexArray(control_points_vao);
     glDrawArrays(GL_POINTS, 0, (n + 1) * (m + 1));
+    glPointSize(1.0f);
 }
 
 void BSplineSurfaceDrawer::DrawControlNet()
 {
+    float net_color[3] = {1.0f, 0.0f, 0.0f};
+    glUniform3fv(color_location, 1, net_color);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBindVertexArray(control_points_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, control_element_vbo);
     glDrawElements(GL_QUADS, m * n * 4, GL_UNSIGNED_SHORT, 0);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void BSplineSurfaceDrawer::DrawKnots()
+{
+    float point_color[3] = {0.0f, 0.0f, 1.0f};
+    glUniform3fv(color_location, 1, point_color);
+    glPointSize(5.0f);
+    glBindVertexArray(knot_vao);
+    glDrawArrays(GL_POINTS, 0, (2 * m + 3 - h) * (2 * n + 3 - k));
+    glPointSize(1.0f);
 }
 
 // TODO: Optimize accoridng to https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bspline-de-boor.html
@@ -122,10 +161,10 @@ void BSplineSurfaceDrawer::LoadInterpolatedPoints()
     std::vector<glm::vec3> interp_vertices(interp * interp * 2);
     for (int u = 0; u < interp; ++u)
     {
-        float norm_u = U[p] + ((float)u / (float)interp) * (U[m + 1] - U[p]);
+        float norm_u = U[p] + ((float)u / (float)(interp - 1)) * (U[m + 1] - U[p]);
         for (int v = 0; v < interp; ++v)
         {
-            float norm_v = V[q] + ((float)v / (float)interp) * (V[n + 1] - V[q]);
+            float norm_v = V[q] + ((float)v / (float)(interp - 1)) * (V[n + 1] - V[q]);
             glm::vec3 c_u(0.0f);
             glm::vec3 du(0.0f);
             glm::vec3 dv(0.0f);
@@ -197,6 +236,34 @@ void BSplineSurfaceDrawer::LoadControlPoints()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 }
 
+// TODO: Optimize accoridng to https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bspline-de-boor.html
+void BSplineSurfaceDrawer::LoadKnots()
+{
+    int p = h - m - 1;
+    int q = k - n - 1;
+    std::vector<glm::vec3> knot_points;
+    for (int u = p; u <= m + 1; ++u)
+    {
+        float k_u = U[u];
+        for (int v = q; v <= n + 1; ++v)
+        {
+            float k_v = V[v];
+            glm::vec3 c_u(0.0f);
+            for (int i = 0; i < m + 1; ++i)
+            {
+                float N_u = BSplineBasisFn(k_u, i, p, U);
+                for (int j = 0; j < n + 1; ++j)
+                {
+                    c_u += N_u * BSplineBasisFn(k_v, j, q, V) * control_points[i][j];
+                }
+            }
+            knot_points.push_back(c_u);
+        }
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, knot_vbo);
+    glBufferData(GL_ARRAY_BUFFER, knot_points.size() * 3 * sizeof(float), &knot_points[0], GL_STATIC_DRAW);
+}
+
 // TODO: DP
 float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots)
 {
@@ -217,4 +284,20 @@ void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
 {
     if (action == GLFW_RELEASE)
         return;
+    if (key == GLFW_KEY_C)
+    {
+        draw_control_net = !draw_control_net;
+    }
+    if (key == GLFW_KEY_F)
+    {
+        surface_draw_mode = SURFACE_FILL;
+    }
+    if (key == GLFW_KEY_M)
+    {
+        surface_draw_mode = SURFACE_MESH;
+    }
+    if (key == GLFW_KEY_P)
+    {
+        surface_draw_mode = SURFACE_POINTS;
+    }
 }

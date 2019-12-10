@@ -91,7 +91,7 @@ void Renderer::ProcessKeysCallback(int key, int action)
             model = glm::rotate(model, 0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
         }
     }
-    if (key == GLFW_KEY_F)
+    if (key == GLFW_KEY_L)
     {
         free_mode = !free_mode;
     }
