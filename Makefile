@@ -2,7 +2,7 @@ CC=gcc
 CXX=g++
 
 all: main
-LDLIBS=-L/usr/lib/ -lglfw3 -lGL	-lglut -lGLEW
+LDLIBS=-L/usr/lib/ -lglfw3 -lGL -lGLEW
 
 OBJS=main.o	shader_loader.o	base.o sphere.o bspline_surface.o
 main: $(OBJS)

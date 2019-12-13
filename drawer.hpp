@@ -1,7 +1,7 @@
 #ifndef DRAWER_H
 #define DRAWER_H
 
-#include <GL/glut.h>
+#include <GL/gl.h>
 
 class Drawer
 {

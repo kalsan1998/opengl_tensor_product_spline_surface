@@ -33,7 +33,6 @@ int main(int argc, char **argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glewExperimental = true; // Needed for core profile
-    glutInit(&argc, argv);
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to initialize GLFW\n");
