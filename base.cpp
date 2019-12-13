@@ -112,3 +112,10 @@ void Base::MouseScroll(double y)
     }
     scale = std::max(5.0f / zoom, 1.0f);
 }
+
+void Base::Resize(int width, int height)
+
+{
+    glViewport(0, 0, width, height);
+    projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+}

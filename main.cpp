@@ -21,6 +21,12 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
         base->ProcessKeysCallback(key, action);
 }
 
+void Resize(GLFWwindow *window, int width, int height)
+{
+    if (base)
+        base->Resize(width, height);
+}
+
 int main(int argc, char **argv)
 {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -58,6 +64,7 @@ int main(int argc, char **argv)
     base = std::make_unique<Base>(shader_program);
     glfwSetScrollCallback(window, MouseScroll);
     glfwSetKeyCallback(window, KeyCallback);
+    glfwSetWindowSizeCallback(window, Resize);
     while (glfwWindowShouldClose(window) == 0)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

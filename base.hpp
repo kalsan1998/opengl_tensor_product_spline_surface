@@ -17,6 +17,7 @@ public:
     void Draw();
     void ProcessKeysCallback(int key, int action);
     void MouseScroll(double y);
+    void Resize(int width, int height);
 
 private:
     GLuint program;
