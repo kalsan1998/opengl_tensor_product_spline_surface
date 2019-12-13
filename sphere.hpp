@@ -5,20 +5,18 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
-class GLFWwindow;
+#include "drawer.hpp"
 
-class SphereDrawer
+class SphereDrawer : public Drawer
 {
 public:
     SphereDrawer(GLuint program);
-    void ProcessKeys(int key, int action);
-    void Draw();
+    ~SphereDrawer() = default;
+    void ProcessKeys(int key, int action) override;
+    void Draw() override;
 
 private:
     void LoadVertices();
-
-    GLuint program;
-    GLuint color_location;
 
     float radius;
     int rings;

@@ -3,8 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : program(program), interp(25), draw_control_net(true), surface_draw_mode(SURFACE_MESH)
+BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : interp(25), draw_control_net(true), surface_draw_mode(SURFACE_MESH)
 {
+    this->program = program;
     color_location = glGetUniformLocation(program, "uni_color");
 
     glGenVertexArrays(1, &interpolated_points_vao);
@@ -288,16 +289,26 @@ void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
     {
         draw_control_net = !draw_control_net;
     }
-    if (key == GLFW_KEY_F)
+    else if (key == GLFW_KEY_Q)
     {
         surface_draw_mode = SURFACE_FILL;
     }
-    if (key == GLFW_KEY_M)
+    else if (key == GLFW_KEY_W)
     {
         surface_draw_mode = SURFACE_MESH;
     }
-    if (key == GLFW_KEY_P)
+    else if (key == GLFW_KEY_E)
     {
         surface_draw_mode = SURFACE_POINTS;
+    }
+    else if (key == GLFW_KEY_MINUS)
+    {
+        interp = interp == 3 ? interp : interp - 1;
+        LoadInterpolatedPoints();
+    }
+    else if (key == GLFW_KEY_EQUAL)
+    {
+        interp += 1;
+        LoadInterpolatedPoints();
     }
 }

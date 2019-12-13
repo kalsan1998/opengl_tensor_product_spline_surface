@@ -6,28 +6,20 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include "drawer.hpp"
 #include "bspline_surface.hpp"
 #include "sphere.hpp"
 
-enum DrawObject
-{
-    DRAW_SPHERE,
-    DRAW_BSPLINE_SURFACE,
-};
-
-class Renderer
+class Base
 {
 public:
-    Renderer(GLuint program);
+    Base(GLuint program);
     void Draw();
     void ProcessKeysCallback(int key, int action);
     void MouseScroll(double y);
 
 private:
     GLuint program;
-    GLuint color_location;
-
-    DrawObject draw_object;
 
     glm::mat4 projection;
     glm::mat4 view;
@@ -40,6 +32,7 @@ private:
 
     bool free_mode;
 
+    Drawer *active_drawer;
     BSplineSurfaceDrawer bspline_surface;
     SphereDrawer sphere;
 };

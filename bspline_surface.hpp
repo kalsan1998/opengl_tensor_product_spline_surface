@@ -6,6 +6,8 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
+#include "drawer.hpp"
+
 enum SurfaceDrawMode
 {
     SURFACE_FILL,
@@ -15,12 +17,13 @@ enum SurfaceDrawMode
 
 typedef std::vector<std::vector<glm::vec3>> Grid;
 
-class BSplineSurfaceDrawer
+class BSplineSurfaceDrawer : public Drawer
 {
 public:
     BSplineSurfaceDrawer(GLuint program);
-    void Draw();
-    void ProcessKeys(int key, int action);
+    ~BSplineSurfaceDrawer() = default;
+    void Draw() override;
+    void ProcessKeys(int key, int action) override;
 
 private:
     void DrawBSplineSurface();
@@ -33,11 +36,7 @@ private:
     void LoadControlPoints();
     float BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots);
 
-    GLuint program;
-
     int interp;
-
-    GLuint color_location;
 
     GLuint control_points_vao;
     GLuint control_points_vbo;

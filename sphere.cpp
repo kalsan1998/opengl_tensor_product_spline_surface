@@ -5,8 +5,9 @@
 
 #include <iostream>
 
-SphereDrawer::SphereDrawer(GLuint program) : program(program), radius(1.0f), rings(12), sectors(36), draw_mode(GL_POINTS)
+SphereDrawer::SphereDrawer(GLuint program) : radius(1.0f), rings(12), sectors(36), draw_mode(GL_POINTS)
 {
+    this->program = program;
     color_location = glGetUniformLocation(program, "uni_color");
 
     glGenVertexArrays(1, &sphere_vao);

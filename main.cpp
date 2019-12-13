@@ -1,5 +1,5 @@
 #include "shader_loader.hpp"
-#include "renderer.hpp"
+#include "base.hpp"
 
 #include <GL/glew.h>
 #include <GL/glut.h>
@@ -8,17 +8,17 @@
 #include <iostream>
 #include <memory>
 
-std::unique_ptr<Renderer> renderer;
+std::unique_ptr<Base> base;
 void MouseScroll(GLFWwindow *window, double x, double y)
 {
-    if (renderer)
-        renderer->MouseScroll(y);
+    if (base)
+        base->MouseScroll(y);
 }
 
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    if (renderer)
-        renderer->ProcessKeysCallback(key, action);
+    if (base)
+        base->ProcessKeysCallback(key, action);
 }
 
 int main(int argc, char **argv)
@@ -55,14 +55,16 @@ int main(int argc, char **argv)
 
     GLuint shader_program = LoadShader("shaders/vertex_shader.vs", "shaders/fragment_shader.fs");
     glUseProgram(shader_program);
-    renderer = std::make_unique<Renderer>(shader_program);
+    base = std::make_unique<Base>(shader_program);
     glfwSetScrollCallback(window, MouseScroll);
     glfwSetKeyCallback(window, KeyCallback);
     while (glfwWindowShouldClose(window) == 0)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        if (renderer)
-            renderer->Draw();
+        if (base)
+        {
+            base->Draw();
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();

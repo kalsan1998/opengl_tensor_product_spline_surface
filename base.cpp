@@ -1,13 +1,11 @@
-#include "renderer.hpp"
+#include "base.hpp"
 
 #include <iostream>
 
 #include "glm/ext.hpp"
 
-Renderer::Renderer(GLuint program) : draw_object(DRAW_SPHERE), program(program), zoom(5.0f), scale(1.0f), theta(0.0f), phi(0.0f), free_mode(false), sphere(program), bspline_surface(program)
+Base::Base(GLuint program) : program(program), zoom(5.0f), scale(1.0f), theta(0.0f), phi(0.0f), free_mode(false), sphere(program), bspline_surface(program)
 {
-    color_location = glGetUniformLocation(program, "uni_color");
-
     projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     view = glm::lookAt(glm::vec3(0.0f, 0.0f, zoom), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::mat4(1.0f);
@@ -16,9 +14,11 @@ Renderer::Renderer(GLuint program) : draw_object(DRAW_SPHERE), program(program),
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
+
+    active_drawer = &bspline_surface;
 }
 
-void Renderer::Draw()
+void Base::Draw()
 {
     GLuint model_location = glGetUniformLocation(program, "model");
     GLuint view_location = glGetUniformLocation(program, "view");
@@ -26,20 +26,10 @@ void Renderer::Draw()
     glUniformMatrix4fv(model_location, 1, GL_FALSE, &(model)[0][0]);
     glUniformMatrix4fv(view_location, 1, GL_FALSE, &(view)[0][0]);
     glUniformMatrix4fv(projection_location, 1, GL_FALSE, &(projection)[0][0]);
-    switch (draw_object)
-    {
-    case DRAW_SPHERE:
-        sphere.Draw();
-        break;
-    case DRAW_BSPLINE_SURFACE:
-        bspline_surface.Draw();
-        break;
-    default:
-        break;
-    }
+    active_drawer->Draw();
 }
 
-void Renderer::ProcessKeysCallback(int key, int action)
+void Base::ProcessKeysCallback(int key, int action)
 {
     if (action == GLFW_RELEASE)
         return;
@@ -55,7 +45,7 @@ void Renderer::ProcessKeysCallback(int key, int action)
             model = glm::rotate(model, 0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
         }
     }
-    if (key == GLFW_KEY_UP)
+    else if (key == GLFW_KEY_UP)
     {
         if (free_mode)
         {
@@ -67,7 +57,7 @@ void Renderer::ProcessKeysCallback(int key, int action)
             model = glm::rotate(model, -0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
         }
     }
-    if (key == GLFW_KEY_LEFT)
+    else if (key == GLFW_KEY_LEFT)
     {
         if (free_mode)
         {
@@ -79,7 +69,7 @@ void Renderer::ProcessKeysCallback(int key, int action)
             model = glm::rotate(model, -0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
         }
     }
-    if (key == GLFW_KEY_RIGHT)
+    else if (key == GLFW_KEY_RIGHT)
     {
         if (free_mode)
         {
@@ -91,29 +81,25 @@ void Renderer::ProcessKeysCallback(int key, int action)
             model = glm::rotate(model, 0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
         }
     }
-    if (key == GLFW_KEY_L)
+    else if (key == GLFW_KEY_TAB)
     {
         free_mode = !free_mode;
     }
-    if (draw_object == DRAW_SPHERE)
+    else if (key == GLFW_KEY_1)
     {
-        sphere.ProcessKeys(key, action);
+        active_drawer = &bspline_surface;
     }
-    if (draw_object == DRAW_BSPLINE_SURFACE)
+    else if (key == GLFW_KEY_2)
     {
-        bspline_surface.ProcessKeys(key, action);
+        active_drawer = &sphere;
     }
-    if (key == GLFW_KEY_S)
+    else
     {
-        draw_object = DRAW_SPHERE;
-    }
-    if (key == GLFW_KEY_B)
-    {
-        draw_object = DRAW_BSPLINE_SURFACE;
+        active_drawer->ProcessKeys(key, action);
     }
 }
 
-void Renderer::MouseScroll(double y)
+void Base::MouseScroll(double y)
 {
     zoom += 0.2f * -y;
     if (zoom < 0.2f)
