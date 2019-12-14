@@ -1,5 +1,8 @@
 #include "shader_loader.hpp"
 #include "base.hpp"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imgui_impl_glfw.h"
 
 #include <GL/glew.h>
 #include <GL/glut.h>
@@ -25,6 +28,18 @@ void Resize(GLFWwindow *window, int width, int height)
 {
     if (base)
         base->Resize(width, height);
+}
+
+void SetUpImGui(GLFWwindow *window)
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
 }
 
 int main(int argc, char **argv)
@@ -56,6 +71,9 @@ int main(int argc, char **argv)
         fprintf(stderr, "Failed to initialize GLEW\n");
         return -1;
     }
+
+    SetUpImGui(window);
+
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     GLuint shader_program = LoadShader("shaders/vertex_shader.vs", "shaders/fragment_shader.fs");
@@ -69,6 +87,7 @@ int main(int argc, char **argv)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         if (base)
         {
+            // base->GuiLogic(window);
             base->Draw();
         }
 

@@ -1,6 +1,7 @@
 #include "base.hpp"
 
 #include <iostream>
+// #include <imgui/imgui.h>
 
 #include "glm/ext.hpp"
 
@@ -119,3 +120,53 @@ void Base::Resize(int width, int height)
     glViewport(0, 0, width, height);
     projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 }
+
+// void Base::GuiLogic(GLFWwindow *window)
+// {
+//     static bool showDemoWindow(false);
+//     static bool showDebugWindow(true);
+
+//     ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
+//     float opacity(0.5f);
+
+//     ImGui::Begin("Debug Window", &showDebugWindow, windowFlags);
+//     if (ImGui::Button("Quit Application"))
+//     {
+//         glfwSetWindowShouldClose(window, GL_TRUE);
+//     }
+
+//     // Eventually you'll create multiple colour widgets with
+//     // radio buttons.  If you use PushID/PopID to give them all
+//     // unique IDs, then ImGui will be able to keep them separate.
+//     // This is unnecessary with a single colour selector and
+//     // radio button, but I'm leaving it in as an example.
+//     // Prefixing a widget name with "##" keeps it from being
+//     // displayed.
+
+//     // ImGui::PushID( 0 );
+//     // ImGui::ColorEdit3( "##Colour", wall_colour );
+//     // ImGui::SameLine();
+//     // if( ImGui::RadioButton( "##Col", &current_col, 0 ) ) {
+//     // 	// Select this colour.
+//     // }
+//     // ImGui::PopID();
+
+//     /*
+// 		// For convenience, you can uncomment this to show ImGui's massive
+// 		// demonstration window right in your application.  Very handy for
+// 		// browsing around to get the widget you want.  Then look in
+// 		// shared/imgui/imgui_demo.cpp to see how it's done.
+// 		if( ImGui::Button( "Test Window" ) ) {
+// 			showTestWindow = !showTestWindow;
+// 		}
+// */
+
+//     ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
+
+//     ImGui::End();
+
+//     if (showDemoWindow)
+//     {
+//         ImGui::ShowDemoWindow(&showDemoWindow);
+//     }
+// }
