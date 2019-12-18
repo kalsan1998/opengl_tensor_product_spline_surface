@@ -17,7 +17,7 @@ public:
     void ProcessKeysCallback(int key, int action);
     void MouseScroll(double y);
     void Resize(int width, int height);
-    void GuiLogic(GLFWwindow* window);
+    void GuiLogic(GLFWwindow *window);
 
 private:
     GLuint program;

@@ -34,7 +34,6 @@ void SetUpImGui(GLFWwindow *window)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -73,7 +72,6 @@ int main(int argc, char **argv)
     }
 
     SetUpImGui(window);
-
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     GLuint shader_program = LoadShader("shaders/vertex_shader.vs", "shaders/fragment_shader.fs");
@@ -82,18 +80,25 @@ int main(int argc, char **argv)
     glfwSetScrollCallback(window, MouseScroll);
     glfwSetKeyCallback(window, KeyCallback);
     glfwSetWindowSizeCallback(window, Resize);
-    while (glfwWindowShouldClose(window) == 0)
+
+    while (glfwWindowShouldClose(window) == 0 && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         if (base)
         {
-            // base->GuiLogic(window);
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            base->GuiLogic(window);
             base->Draw();
+
+            // Render dear imgui into screen
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            return 0;
     }
 }

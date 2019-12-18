@@ -3,6 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include "imgui/imgui.h"
+
+const float EPSILON = 0.0001;
 BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : interp(25), draw_control_net(true), surface_draw_mode(SURFACE_MESH)
 {
     this->program = program;
@@ -79,8 +82,8 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : interp(25), draw_co
     n = control_points[0].size() - 1;
     h = U.size() - 1;
     k = V.size() - 1;
-    U[h] += 0.0001;
-    V[k] += 0.0001;
+    U[h] += EPSILON;
+    V[k] += EPSILON;
 
     LoadInterpolatedPoints();
     LoadKnots();
@@ -210,7 +213,6 @@ void BSplineSurfaceDrawer::LoadInterpolatedPoints()
 void BSplineSurfaceDrawer::LoadControlPoints()
 {
     std::vector<glm::vec3> points;
-    int i = 0;
     for (auto &u : control_points)
     {
         for (auto v : u)
@@ -268,7 +270,7 @@ void BSplineSurfaceDrawer::LoadKnots()
 // TODO: DP
 float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots)
 {
-    if (p == 0)
+    if (p <= 0)
     {
         if (knots[i] <= u && u < knots[i + 1])
             return 1;
@@ -279,6 +281,78 @@ float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, const std::vec
     float n_2 = BSplineBasisFn(u, i + 1, p - 1, knots);
     float term_2 = n_2 == 0 ? 0 : ((knots[i + p + 1] - u) / (knots[i + p + 1] - knots[i + 1])) * n_2;
     return term_1 + term_2;
+}
+
+void BSplineSurfaceDrawer::UpdateControlPointCounts(int new_m, int new_n)
+{
+    if (new_n == n && new_m == m)
+        return;
+    if (new_n < 0)
+        new_n = 0;
+    if (new_n > k - 1)
+        new_n = k - 1;
+    if (new_m < 0)
+        new_m = 0;
+    if (new_m > h - 1)
+        new_m = h - 1;
+    if (new_n != n)
+    {
+        for (auto &v : control_points)
+        {
+            v.resize(new_n + 1);
+            for (int i = n + 1; i < new_n + 1; ++i)
+            {
+                v[i] = v[n];
+            }
+        }
+        n = new_n;
+    }
+    if (new_m != m)
+    {
+        control_points.resize(new_m + 1);
+        for (int i = m + 1; i < new_m + 1; ++i)
+        {
+            control_points[i] = control_points[m];
+        }
+        m = new_m;
+    }
+    LoadControlPoints();
+    LoadInterpolatedPoints();
+    LoadKnots();
+}
+
+void BSplineSurfaceDrawer::UpdateKnotCounts(int new_h, int new_k)
+{
+    if (new_h == h && new_k == k)
+        return;
+    if (new_h < m + 1)
+        new_h = m + 1;
+    if (new_k < n + 1)
+        new_k = n + 1;
+    if (new_h != h)
+    {
+        U[h] -= EPSILON;
+        U.resize(new_h + 1);
+        for (int i = h + 1; i < new_h + 1; ++i)
+        {
+            U[i] = U[h];
+        }
+        h = new_h;
+        U[h] += EPSILON;
+    }
+    if (new_k != k)
+    {
+        V[k] -= EPSILON;
+        V.resize(new_k + 1);
+        for (int i = k + 1; i < new_k + 1; ++i)
+        {
+            V[i] = V[k];
+        }
+        k = new_k;
+        V[k] += EPSILON;
+    }
+    LoadKnots();
+    LoadInterpolatedPoints();
 }
 
 void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
@@ -311,4 +385,14 @@ void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
         interp += 1;
         LoadInterpolatedPoints();
     }
+}
+void BSplineSurfaceDrawer::GuiLogic()
+{
+    int ctrl_point_counts[2] = {m + 1, n + 1};
+    int degrees[2] = {h - m - 1, k - n - 1};
+    int step = 1;
+    ImGui::InputScalarN("Control Points (u,v)", ImGuiDataType_S32, ctrl_point_counts, 2, &step, NULL, "%d");
+    ImGui::InputScalarN("Degrees (u,v)", ImGuiDataType_S32, degrees, 2, &step, NULL, "%d");
+    UpdateControlPointCounts(ctrl_point_counts[0] - 1, ctrl_point_counts[1] - 1);
+    UpdateKnotCounts(degrees[0] + m + 1, degrees[1] + n + 1);
 }

@@ -1,11 +1,11 @@
 #include "base.hpp"
 
 #include <iostream>
-// #include <imgui/imgui.h>
 
+#include "imgui/imgui.h"
 #include "glm/ext.hpp"
 
-Base::Base(GLuint program) : program(program), zoom(5.0f), scale(1.0f), theta(0.0f), phi(0.0f), free_mode(false), sphere(program), bspline_surface(program)
+Base::Base(GLuint program) : program(program), zoom(5.0f), scale(1.0f), theta(0.0f), phi(0.0f), free_mode(false), bspline_surface(program), sphere(program)
 {
     projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     view = glm::lookAt(glm::vec3(0.0f, 0.0f, zoom), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -86,14 +86,14 @@ void Base::ProcessKeysCallback(int key, int action)
     {
         free_mode = !free_mode;
     }
-    else if (key == GLFW_KEY_1)
-    {
-        active_drawer = &bspline_surface;
-    }
-    else if (key == GLFW_KEY_2)
-    {
-        active_drawer = &sphere;
-    }
+    // else if (key == GLFW_KEY_1)
+    // {
+    //     active_drawer = &bspline_surface;
+    // }
+    // else if (key == GLFW_KEY_2)
+    // {
+    //     active_drawer = &sphere;
+    // }
     else
     {
         active_drawer->ProcessKeys(key, action);
@@ -121,52 +121,20 @@ void Base::Resize(int width, int height)
     projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 }
 
-// void Base::GuiLogic(GLFWwindow *window)
-// {
-//     static bool showDemoWindow(false);
-//     static bool showDebugWindow(true);
+void Base::GuiLogic(GLFWwindow *window)
+{
+    static bool showDebugWindow(true);
 
-//     ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
-//     float opacity(0.5f);
+    ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("##window", &showDebugWindow, windowFlags);
+    if (ImGui::Button("Quit Application"))
+    {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
 
-//     ImGui::Begin("Debug Window", &showDebugWindow, windowFlags);
-//     if (ImGui::Button("Quit Application"))
-//     {
-//         glfwSetWindowShouldClose(window, GL_TRUE);
-//     }
+    active_drawer->GuiLogic();
 
-//     // Eventually you'll create multiple colour widgets with
-//     // radio buttons.  If you use PushID/PopID to give them all
-//     // unique IDs, then ImGui will be able to keep them separate.
-//     // This is unnecessary with a single colour selector and
-//     // radio button, but I'm leaving it in as an example.
-//     // Prefixing a widget name with "##" keeps it from being
-//     // displayed.
+    ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
 
-//     // ImGui::PushID( 0 );
-//     // ImGui::ColorEdit3( "##Colour", wall_colour );
-//     // ImGui::SameLine();
-//     // if( ImGui::RadioButton( "##Col", &current_col, 0 ) ) {
-//     // 	// Select this colour.
-//     // }
-//     // ImGui::PopID();
-
-//     /*
-// 		// For convenience, you can uncomment this to show ImGui's massive
-// 		// demonstration window right in your application.  Very handy for
-// 		// browsing around to get the widget you want.  Then look in
-// 		// shared/imgui/imgui_demo.cpp to see how it's done.
-// 		if( ImGui::Button( "Test Window" ) ) {
-// 			showTestWindow = !showTestWindow;
-// 		}
-// */
-
-//     ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
-
-//     ImGui::End();
-
-//     if (showDemoWindow)
-//     {
-//         ImGui::ShowDemoWindow(&showDemoWindow);
-//     }
-// }
+    ImGui::End();
+}

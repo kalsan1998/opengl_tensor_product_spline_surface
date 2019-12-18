@@ -23,8 +23,11 @@ public:
     ~BSplineSurfaceDrawer() = default;
     void Draw() override;
     void ProcessKeys(int key, int action) override;
+    void GuiLogic() override;
 
 private:
+    void UpdateControlPointCounts(int new_m, int new_n);
+    void UpdateKnotCounts(int new_h, int new_k);
     void DrawBSplineSurface();
     void DrawKnots();
     void DrawControlPoints();

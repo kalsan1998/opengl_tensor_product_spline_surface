@@ -15,7 +15,7 @@ main.o:	main.cpp shader_loader.hpp base.hpp imgui/imgui.h imgui/imgui_impl_openg
 shader_loader.o: shader_loader.cpp
 	$(CXX) $(CXXFLAGS) -c shader_loader.cpp
 
-base.o: base.cpp sphere.hpp bspline_surface.hpp
+base.o: base.cpp sphere.hpp bspline_surface.hpp imgui/imgui.h
 	$(CXX) $(CXXFLAGS) -c base.cpp
 
 sphere.o: sphere.cpp

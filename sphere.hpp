@@ -13,6 +13,7 @@ public:
     ~SphereDrawer() = default;
     void ProcessKeys(int key, int action) override;
     void Draw() override;
+    void GuiLogic() override {}
 
 private:
     void LoadVertices();
