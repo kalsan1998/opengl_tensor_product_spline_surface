@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <algorithm>
 
 #include "imgui/imgui.h"
 
@@ -283,18 +284,14 @@ float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, const std::vec
     return term_1 + term_2;
 }
 
-void BSplineSurfaceDrawer::UpdateControlPointCounts(int new_m, int new_n)
+bool BSplineSurfaceDrawer::UpdateControlPointCounts(int new_m, int new_n)
 {
+    if (new_n < 0 || new_n > k - 1)
+        new_n = n;
+    if (new_m < 0 || new_m > h - 1)
+        new_m = m;
     if (new_n == n && new_m == m)
-        return;
-    if (new_n < 0)
-        new_n = 0;
-    if (new_n > k - 1)
-        new_n = k - 1;
-    if (new_m < 0)
-        new_m = 0;
-    if (new_m > h - 1)
-        new_m = h - 1;
+        return false;
     if (new_n != n)
     {
         for (auto &v : control_points)
@@ -316,19 +313,17 @@ void BSplineSurfaceDrawer::UpdateControlPointCounts(int new_m, int new_n)
         }
         m = new_m;
     }
-    LoadControlPoints();
-    LoadInterpolatedPoints();
-    LoadKnots();
+    return true;
 }
 
-void BSplineSurfaceDrawer::UpdateKnotCounts(int new_h, int new_k)
+bool BSplineSurfaceDrawer::UpdateKnotCounts(int new_h, int new_k)
 {
-    if (new_h == h && new_k == k)
-        return;
     if (new_h < m + 1)
-        new_h = m + 1;
+        new_h = h;
     if (new_k < n + 1)
-        new_k = n + 1;
+        new_k = k;
+    if (new_h == h && new_k == k)
+        return false;
     if (new_h != h)
     {
         U[h] -= EPSILON;
@@ -351,8 +346,7 @@ void BSplineSurfaceDrawer::UpdateKnotCounts(int new_h, int new_k)
         k = new_k;
         V[k] += EPSILON;
     }
-    LoadKnots();
-    LoadInterpolatedPoints();
+    return true;
 }
 
 void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
@@ -388,11 +382,78 @@ void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
 }
 void BSplineSurfaceDrawer::GuiLogic()
 {
+    bool needs_update = false;
     int ctrl_point_counts[2] = {m + 1, n + 1};
     int degrees[2] = {h - m - 1, k - n - 1};
     int step = 1;
     ImGui::InputScalarN("Control Points (u,v)", ImGuiDataType_S32, ctrl_point_counts, 2, &step, NULL, "%d");
     ImGui::InputScalarN("Degrees (u,v)", ImGuiDataType_S32, degrees, 2, &step, NULL, "%d");
-    UpdateControlPointCounts(ctrl_point_counts[0] - 1, ctrl_point_counts[1] - 1);
-    UpdateKnotCounts(degrees[0] + m + 1, degrees[1] + n + 1);
+    needs_update |= UpdateKnotCounts(degrees[0] + m + 1, degrees[1] + n + 1);
+    needs_update |= UpdateControlPointCounts(ctrl_point_counts[0] - 1, ctrl_point_counts[1] - 1);
+    if (ImGui::CollapsingHeader("Control Point Coordinates"))
+    {
+        for (int i = 0; i < m + 1; ++i)
+        {
+            for (int j = 0; j < n + 1; ++j)
+            {
+                float coords[3] = {control_points[i][j].x, control_points[i][j].y, control_points[i][j].z};
+                char label[8];
+                sprintf(label, "(%d,%d)", i, j);
+                ImGui::InputFloat3(label, coords);
+                glm::vec3 new_coords({coords[0], coords[1], coords[2]});
+                if (new_coords != control_points[i][j])
+                {
+                    control_points[i][j] = new_coords;
+                    needs_update = true;
+                }
+            }
+        }
+    }
+    if (ImGui::CollapsingHeader("Knots"))
+    {
+        ImGui::Columns(2, NULL, true);
+        ImGui::Text("u");
+        ImGui::NextColumn();
+        ImGui::Text("v");
+        ImGui::NextColumn();
+        float step = 0.05f;
+        U[h] -= EPSILON;
+        for (int i = 0; i < h + 1; ++i)
+        {
+            float val = U[i];
+            char label[5];
+            sprintf(label, "##u%d", i);
+            ImGui::InputFloat(label, &val, step);
+            if (val >= 0.0 && val <= 1.0 && val != U[i])
+            {
+                U[i] = val;
+                needs_update = true;
+            }
+        }
+        ImGui::NextColumn();
+        V[k] -= EPSILON;
+        for (int i = 0; i < k + 1; ++i)
+        {
+            float val = V[i];
+            char label[5];
+            sprintf(label, "##v%d", i);
+            ImGui::InputFloat(label, &val, step);
+            if (val >= 0.0 && val <= 1.0 && val != V[i])
+            {
+                V[i] = val;
+                needs_update = true;
+            }
+        }
+        ImGui::Columns(1);
+        std::sort(U.begin(), U.end());
+        U[h] += EPSILON;
+        std::sort(V.begin(), V.end());
+        V[k] += EPSILON;
+    }
+    if (needs_update)
+    {
+        LoadControlPoints();
+        LoadInterpolatedPoints();
+        LoadKnots();
+    }
 }

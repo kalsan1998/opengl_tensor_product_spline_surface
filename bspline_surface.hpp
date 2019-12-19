@@ -26,8 +26,8 @@ public:
     void GuiLogic() override;
 
 private:
-    void UpdateControlPointCounts(int new_m, int new_n);
-    void UpdateKnotCounts(int new_h, int new_k);
+    bool UpdateControlPointCounts(int new_m, int new_n);
+    bool UpdateKnotCounts(int new_h, int new_k);
     void DrawBSplineSurface();
     void DrawKnots();
     void DrawControlPoints();

@@ -127,14 +127,8 @@ void Base::GuiLogic(GLFWwindow *window)
 
     ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Begin("##window", &showDebugWindow, windowFlags);
-    if (ImGui::Button("Quit Application"))
-    {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-    }
-
-    active_drawer->GuiLogic();
-
     ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
 
+    active_drawer->GuiLogic();
     ImGui::End();
 }
