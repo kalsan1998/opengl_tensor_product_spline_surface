@@ -5,18 +5,26 @@
 #include "imgui/imgui.h"
 #include "glm/ext.hpp"
 
-Base::Base(GLuint program) : program(program), zoom(5.0f), scale(1.0f), theta(0.0f), phi(0.0f), free_mode(false), bspline_surface(program), sphere(program)
+Base::Base(GLuint program) : program(program), is_clicked(false), bspline_surface(program)
 {
-    projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-    view = glm::lookAt(glm::vec3(0.0f, 0.0f, zoom), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::mat4(1.0f);
+    SetDefaults();
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
+}
 
-    active_drawer = &bspline_surface;
+void Base::SetDefaults()
+{
+    zoom = 5.0f;
+    scale = 1.0f;
+    theta = 0.0f;
+    phi = 0.0f;
+    free_mode = true;
+    projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+    view = glm::lookAt(glm::vec3(0.0f, 0.0f, zoom), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::mat4(1.0f);
 }
 
 void Base::Draw()
@@ -27,10 +35,10 @@ void Base::Draw()
     glUniformMatrix4fv(model_location, 1, GL_FALSE, &(model)[0][0]);
     glUniformMatrix4fv(view_location, 1, GL_FALSE, &(view)[0][0]);
     glUniformMatrix4fv(projection_location, 1, GL_FALSE, &(projection)[0][0]);
-    active_drawer->Draw();
+    bspline_surface.Draw();
 }
 
-void Base::ProcessKeysCallback(int key, int action)
+void Base::KeyPress(int key, int action)
 {
     if (action == GLFW_RELEASE)
         return;
@@ -86,17 +94,47 @@ void Base::ProcessKeysCallback(int key, int action)
     {
         free_mode = !free_mode;
     }
-    // else if (key == GLFW_KEY_1)
-    // {
-    //     active_drawer = &bspline_surface;
-    // }
-    // else if (key == GLFW_KEY_2)
-    // {
-    //     active_drawer = &sphere;
-    // }
+    else if (key == GLFW_KEY_R)
+    {
+        SetDefaults();
+    }
     else
     {
-        active_drawer->ProcessKeys(key, action);
+        bspline_surface.ProcessKeys(key, action);
+    }
+}
+
+void Base::MouseMove(double x, double y)
+{
+    if (is_clicked)
+    {
+        float x_delta = x - mouse_x_pos;
+        float y_delta = y - mouse_y_pos;
+
+        // If in free mode then translate. Else rotate.
+        if (free_mode)
+        {
+            view = glm::translate(view, glm::vec3(x_delta / 100.0f, -y_delta / 100.0f, 0.0f));
+        }
+        else
+        {
+            float theta_delta = glm::radians(x_delta);
+            float phi_delta = glm::radians(y_delta);
+            theta += theta_delta;
+            phi += phi_delta;
+            model = glm::rotate(model, theta_delta, glm::vec3(model[0][1], model[1][1], model[2][1]));
+            model = glm::rotate(model, phi_delta, glm::vec3(model[0][0], model[1][0], model[2][0]));
+        }
+    }
+    mouse_x_pos = x;
+    mouse_y_pos = y;
+}
+
+void Base::MousePress(int button, int action)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        is_clicked = (GLFW_PRESS == action);
     }
 }
 
@@ -121,14 +159,31 @@ void Base::Resize(int width, int height)
     projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 }
 
+void ToolTipHelper(const char *text)
+{
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(text);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
 void Base::GuiLogic(GLFWwindow *window)
 {
-    static bool showDebugWindow(true);
-
+    static bool show_window(true);
     ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Begin("##window", &showDebugWindow, windowFlags);
+    ImGui::Begin("##window", &show_window, windowFlags);
+    if (ImGui::Button("Reset Camera"))
+    {
+        SetDefaults();
+    }
+    ToolTipHelper("R");
+    ImGui::Checkbox("Free Roam", &free_mode);
+    ToolTipHelper("TAB");
+    ImGui::Text("Zoom Factor: %.1f", 5.0f / zoom);
     ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
-
-    active_drawer->GuiLogic();
     ImGui::End();
 }

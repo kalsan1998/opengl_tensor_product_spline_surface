@@ -5,8 +5,6 @@
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 
-#include "drawer.hpp"
-
 enum SurfaceDrawMode
 {
     SURFACE_FILL,
@@ -16,18 +14,16 @@ enum SurfaceDrawMode
 
 typedef std::vector<std::vector<glm::vec3>> Grid;
 
-class BSplineSurfaceDrawer : public Drawer
+class BSplineSurface
 {
 public:
-    BSplineSurfaceDrawer(GLuint program);
-    ~BSplineSurfaceDrawer() = default;
-    void Draw() override;
-    void ProcessKeys(int key, int action) override;
-    void GuiLogic() override;
+    BSplineSurface(GLuint program);
+    ~BSplineSurface() = default;
+    void Draw();
+    void ProcessKeys(int key, int action);
+    void GuiLogic();
 
 private:
-    bool UpdateControlPointCounts(int new_m, int new_n);
-    bool UpdateKnotCounts(int new_h, int new_k);
     void DrawBSplineSurface();
     void DrawKnots();
     void DrawControlPoints();
@@ -37,6 +33,12 @@ private:
     void LoadKnots();
     void LoadControlPoints();
     float BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots);
+
+    void UpdateKnots();
+    bool UpdateControlPointCounts(int new_m, int new_n);
+
+    GLuint program;
+    GLuint color_location;
 
     int interp;
 
@@ -50,6 +52,10 @@ private:
 
     GLuint knot_vao;
     GLuint knot_vbo;
+
+    // For a bicubic spline we must satisfy:
+    // h - m - 1 = k - n - 1 = 3
+    const int kDeg = 3;
 
     int m; // m + 1 rows of control points;
     int n; // n + 1 columns of control points;

@@ -5,21 +5,23 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "drawer.hpp"
 #include "bspline_surface.hpp"
-#include "sphere.hpp"
 
 class Base
 {
 public:
     Base(GLuint program);
     void Draw();
-    void ProcessKeysCallback(int key, int action);
+    void KeyPress(int key, int action);
+    void MouseMove(double x, double y);
+    void MousePress(int button, int action);
     void MouseScroll(double y);
     void Resize(int width, int height);
     void GuiLogic(GLFWwindow *window);
 
 private:
+    void SetDefaults();
+
     GLuint program;
 
     glm::mat4 projection;
@@ -31,11 +33,13 @@ private:
     float theta;
     float phi;
 
-    bool free_mode;
+    float mouse_x_pos;
+    float mouse_y_pos;
 
-    Drawer *active_drawer;
-    BSplineSurfaceDrawer bspline_surface;
-    SphereDrawer sphere;
+    bool free_mode;
+    bool is_clicked;
+
+    BSplineSurface bspline_surface;
 };
 
 #endif

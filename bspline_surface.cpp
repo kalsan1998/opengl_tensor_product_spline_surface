@@ -7,7 +7,7 @@
 #include "imgui/imgui.h"
 
 const float EPSILON = 0.0001;
-BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : interp(25), draw_control_net(true), surface_draw_mode(SURFACE_MESH)
+BSplineSurface::BSplineSurface(GLuint program) : interp(25), draw_control_net(true), surface_draw_mode(SURFACE_MESH)
 {
     this->program = program;
     color_location = glGetUniformLocation(program, "uni_color");
@@ -77,21 +77,37 @@ BSplineSurfaceDrawer::BSplineSurfaceDrawer(GLuint program) : interp(25), draw_co
             glm::vec3(1.0f, 0.1f, 1.0f),
         },
     };
-    U = {0.0f, 0.0f, 0.0f, 0.25f, 0.75f, 1.0f, 1.0f, 1.0f};
-    V = {0.0f, 0.0f, 0.0f, 0.25f, 0.75f, 1.0f, 1.0f, 1.0f};
     m = control_points.size() - 1;
     n = control_points[0].size() - 1;
-    h = U.size() - 1;
-    k = V.size() - 1;
-    U[h] += EPSILON;
-    V[k] += EPSILON;
+    h = kDeg + m + 1;
+    k = kDeg + n + 1;
+
+    UpdateKnots();
 
     LoadInterpolatedPoints();
     LoadKnots();
     LoadControlPoints();
 }
 
-void BSplineSurfaceDrawer::Draw()
+void BSplineSurface::UpdateKnots()
+{
+    U = std::vector<float>(h + 1);
+    V = std::vector<float>(k + 1);
+    const float u_step = 1.0 / h;
+    const float v_step = 1.0 / k;
+    U[0] = 0.0f;
+    V[0] = 0.0f;
+
+    for (int i = 1; i <= h; ++i)
+    {
+        U[i] = U[i - 1] + u_step;
+    }
+    for (int i = 1; i <= k; ++i)
+    {
+        V[i] = V[i - 1] + v_step;
+    }
+}
+void BSplineSurface::Draw()
 {
     DrawBSplineSurface();
     DrawKnots();
@@ -103,7 +119,7 @@ void BSplineSurfaceDrawer::Draw()
     }
 }
 
-void BSplineSurfaceDrawer::DrawBSplineSurface()
+void BSplineSurface::DrawBSplineSurface()
 {
     float surface_color[3] = {0.7f, 0.7f, 0.0f};
     glUniform3fv(color_location, 1, surface_color);
@@ -127,7 +143,7 @@ void BSplineSurfaceDrawer::DrawBSplineSurface()
     glDrawElements(GL_TRIANGLES, (interp - 1) * (interp - 1) * 6, GL_UNSIGNED_SHORT, 0);
 }
 
-void BSplineSurfaceDrawer::DrawControlPoints()
+void BSplineSurface::DrawControlPoints()
 {
     float point_color[3] = {0.9f, 0.5f, 0.0f};
     glUniform3fv(color_location, 1, point_color);
@@ -137,7 +153,7 @@ void BSplineSurfaceDrawer::DrawControlPoints()
     glPointSize(1.0f);
 }
 
-void BSplineSurfaceDrawer::DrawControlNet()
+void BSplineSurface::DrawControlNet()
 {
     float net_color[3] = {1.0f, 0.0f, 0.0f};
     glUniform3fv(color_location, 1, net_color);
@@ -148,7 +164,7 @@ void BSplineSurfaceDrawer::DrawControlNet()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void BSplineSurfaceDrawer::DrawKnots()
+void BSplineSurface::DrawKnots()
 {
     float point_color[3] = {0.0f, 0.0f, 1.0f};
     glUniform3fv(color_location, 1, point_color);
@@ -159,30 +175,28 @@ void BSplineSurfaceDrawer::DrawKnots()
 }
 
 // TODO: Optimize accoridng to https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bspline-de-boor.html
-void BSplineSurfaceDrawer::LoadInterpolatedPoints()
+void BSplineSurface::LoadInterpolatedPoints()
 {
-    int p = h - m - 1;
-    int q = k - n - 1;
     std::vector<glm::vec3> interp_vertices(interp * interp * 2);
     for (int u = 0; u < interp; ++u)
     {
-        float norm_u = U[p] + ((float)u / (float)(interp - 1)) * (U[m + 1] - U[p]);
+        float norm_u = U[kDeg] + ((float)u / (float)(interp - 1)) * (U[m + 1] - U[kDeg]);
         for (int v = 0; v < interp; ++v)
         {
-            float norm_v = V[q] + ((float)v / (float)(interp - 1)) * (V[n + 1] - V[q]);
+            float norm_v = V[kDeg] + ((float)v / (float)(interp - 1)) * (V[n + 1] - V[kDeg]);
             glm::vec3 c_u(0.0f);
             glm::vec3 du(0.0f);
             glm::vec3 dv(0.0f);
             for (int i = 0; i < m + 1; ++i)
             {
-                float N_u = BSplineBasisFn(norm_u, i, p, U);
+                float N_u = BSplineBasisFn(norm_u, i, kDeg, U);
                 for (int j = 0; j < n + 1; ++j)
                 {
-                    c_u += N_u * BSplineBasisFn(norm_v, j, q, V) * control_points[i][j];
+                    c_u += N_u * BSplineBasisFn(norm_v, j, kDeg, V) * control_points[i][j];
                     if (i != m)
-                        du += BSplineBasisFn(norm_u, i + 1, p - 1, U) * (p / (U[i + p + 1] - U[i + 1])) * (control_points[i + 1][j] - control_points[i][j]);
+                        du += BSplineBasisFn(norm_u, i + 1, kDeg - 1, U) * (kDeg / (U[i + kDeg + 1] - U[i + 1])) * (control_points[i + 1][j] - control_points[i][j]);
                     if (j != n)
-                        dv += BSplineBasisFn(norm_v, j + 1, q - 1, V) * (q / (V[j + q + 1] - V[j + 1])) * (control_points[i][j + 1] - control_points[i][j]);
+                        dv += BSplineBasisFn(norm_v, j + 1, kDeg - 1, V) * (kDeg / (V[j + kDeg + 1] - V[j + 1])) * (control_points[i][j + 1] - control_points[i][j]);
                 }
             }
             glm::vec3 normal = glm::cross(du, dv);
@@ -193,7 +207,7 @@ void BSplineSurfaceDrawer::LoadInterpolatedPoints()
     glBindBuffer(GL_ARRAY_BUFFER, interpolated_points_vbo);
     glBufferData(GL_ARRAY_BUFFER, interp_vertices.size() * 3 * sizeof(float), &interp_vertices[0], GL_STATIC_DRAW);
 
-    std::vector<GLushort> indices((interp - 1) * (interp - 1) * 6); // Each cell hs 2 triangles == 6 vertices;
+    std::vector<GLushort> indices((interp - 1) * (interp - 1) * 6); // Each cell has 2 triangles == 6 vertices;
     for (int i = 0; i < interp - 1; ++i)
     {
         for (int j = 0; j < interp - 1; ++j)
@@ -211,7 +225,7 @@ void BSplineSurfaceDrawer::LoadInterpolatedPoints()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 }
 
-void BSplineSurfaceDrawer::LoadControlPoints()
+void BSplineSurface::LoadControlPoints()
 {
     std::vector<glm::vec3> points;
     for (auto &u : control_points)
@@ -241,24 +255,22 @@ void BSplineSurfaceDrawer::LoadControlPoints()
 }
 
 // TODO: Optimize accoridng to https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bspline-de-boor.html
-void BSplineSurfaceDrawer::LoadKnots()
+void BSplineSurface::LoadKnots()
 {
-    int p = h - m - 1;
-    int q = k - n - 1;
     std::vector<glm::vec3> knot_points;
-    for (int u = p; u <= m + 1; ++u)
+    for (int u = kDeg; u <= m + 1; ++u)
     {
         float k_u = U[u];
-        for (int v = q; v <= n + 1; ++v)
+        for (int v = kDeg; v <= n + 1; ++v)
         {
             float k_v = V[v];
             glm::vec3 c_u(0.0f);
             for (int i = 0; i < m + 1; ++i)
             {
-                float N_u = BSplineBasisFn(k_u, i, p, U);
+                float N_u = BSplineBasisFn(k_u, i, kDeg, U);
                 for (int j = 0; j < n + 1; ++j)
                 {
-                    c_u += N_u * BSplineBasisFn(k_v, j, q, V) * control_points[i][j];
+                    c_u += N_u * BSplineBasisFn(k_v, j, kDeg, V) * control_points[i][j];
                 }
             }
             knot_points.push_back(c_u);
@@ -269,7 +281,7 @@ void BSplineSurfaceDrawer::LoadKnots()
 }
 
 // TODO: DP
-float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots)
+float BSplineSurface::BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots)
 {
     if (p <= 0)
     {
@@ -284,7 +296,7 @@ float BSplineSurfaceDrawer::BSplineBasisFn(float u, int i, int p, const std::vec
     return term_1 + term_2;
 }
 
-bool BSplineSurfaceDrawer::UpdateControlPointCounts(int new_m, int new_n)
+bool BSplineSurface::UpdateControlPointCounts(int new_m, int new_n)
 {
     if (new_n < 0 || new_n > k - 1)
         new_n = n;
@@ -316,40 +328,7 @@ bool BSplineSurfaceDrawer::UpdateControlPointCounts(int new_m, int new_n)
     return true;
 }
 
-bool BSplineSurfaceDrawer::UpdateKnotCounts(int new_h, int new_k)
-{
-    if (new_h < m + 1)
-        new_h = h;
-    if (new_k < n + 1)
-        new_k = k;
-    if (new_h == h && new_k == k)
-        return false;
-    if (new_h != h)
-    {
-        U[h] -= EPSILON;
-        U.resize(new_h + 1);
-        for (int i = h + 1; i < new_h + 1; ++i)
-        {
-            U[i] = U[h];
-        }
-        h = new_h;
-        U[h] += EPSILON;
-    }
-    if (new_k != k)
-    {
-        V[k] -= EPSILON;
-        V.resize(new_k + 1);
-        for (int i = k + 1; i < new_k + 1; ++i)
-        {
-            V[i] = V[k];
-        }
-        k = new_k;
-        V[k] += EPSILON;
-    }
-    return true;
-}
-
-void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
+void BSplineSurface::ProcessKeys(int key, int action)
 {
     if (action == GLFW_RELEASE)
         return;
@@ -380,80 +359,80 @@ void BSplineSurfaceDrawer::ProcessKeys(int key, int action)
         LoadInterpolatedPoints();
     }
 }
-void BSplineSurfaceDrawer::GuiLogic()
+void BSplineSurface::GuiLogic()
 {
-    bool needs_update = false;
-    int ctrl_point_counts[2] = {m + 1, n + 1};
-    int degrees[2] = {h - m - 1, k - n - 1};
-    int step = 1;
-    ImGui::InputScalarN("Control Points (u,v)", ImGuiDataType_S32, ctrl_point_counts, 2, &step, NULL, "%d");
-    ImGui::InputScalarN("Degrees (u,v)", ImGuiDataType_S32, degrees, 2, &step, NULL, "%d");
-    needs_update |= UpdateKnotCounts(degrees[0] + m + 1, degrees[1] + n + 1);
-    needs_update |= UpdateControlPointCounts(ctrl_point_counts[0] - 1, ctrl_point_counts[1] - 1);
-    if (ImGui::CollapsingHeader("Control Point Coordinates"))
-    {
-        for (int i = 0; i < m + 1; ++i)
-        {
-            for (int j = 0; j < n + 1; ++j)
-            {
-                float coords[3] = {control_points[i][j].x, control_points[i][j].y, control_points[i][j].z};
-                char label[8];
-                sprintf(label, "(%d,%d)", i, j);
-                ImGui::InputFloat3(label, coords);
-                glm::vec3 new_coords({coords[0], coords[1], coords[2]});
-                if (new_coords != control_points[i][j])
-                {
-                    control_points[i][j] = new_coords;
-                    needs_update = true;
-                }
-            }
-        }
-    }
-    if (ImGui::CollapsingHeader("Knots"))
-    {
-        ImGui::Columns(2, NULL, true);
-        ImGui::Text("u");
-        ImGui::NextColumn();
-        ImGui::Text("v");
-        ImGui::NextColumn();
-        float step = 0.05f;
-        U[h] -= EPSILON;
-        for (int i = 0; i < h + 1; ++i)
-        {
-            float val = U[i];
-            char label[5];
-            sprintf(label, "##u%d", i);
-            ImGui::InputFloat(label, &val, step);
-            if (val >= 0.0 && val <= 1.0 && val != U[i])
-            {
-                U[i] = val;
-                needs_update = true;
-            }
-        }
-        ImGui::NextColumn();
-        V[k] -= EPSILON;
-        for (int i = 0; i < k + 1; ++i)
-        {
-            float val = V[i];
-            char label[5];
-            sprintf(label, "##v%d", i);
-            ImGui::InputFloat(label, &val, step);
-            if (val >= 0.0 && val <= 1.0 && val != V[i])
-            {
-                V[i] = val;
-                needs_update = true;
-            }
-        }
-        ImGui::Columns(1);
-        std::sort(U.begin(), U.end());
-        U[h] += EPSILON;
-        std::sort(V.begin(), V.end());
-        V[k] += EPSILON;
-    }
-    if (needs_update)
-    {
-        LoadControlPoints();
-        LoadInterpolatedPoints();
-        LoadKnots();
-    }
+    // bool needs_update = false;
+    // int ctrl_point_counts[2] = {m + 1, n + 1};
+    // int degrees[2] = {h - m - 1, k - n - 1};
+    // int step = 1;
+    // ImGui::InputScalarN("Control Points (u,v)", ImGuiDataType_S32, ctrl_point_counts, 2, &step, NULL, "%d");
+    // ImGui::InputScalarN("Degrees (u,v)", ImGuiDataType_S32, degrees, 2, &step, NULL, "%d");
+    // needs_update |= UpdateKnotCounts(degrees[0] + m + 1, degrees[1] + n + 1);
+    // needs_update |= UpdateControlPointCounts(ctrl_point_counts[0] - 1, ctrl_point_counts[1] - 1);
+    // if (ImGui::CollapsingHeader("Control Point Coordinates"))
+    // {
+    //     for (int i = 0; i < m + 1; ++i)
+    //     {
+    //         for (int j = 0; j < n + 1; ++j)
+    //         {
+    //             float coords[3] = {control_points[i][j].x, control_points[i][j].y, control_points[i][j].z};
+    //             char label[8];
+    //             sprintf(label, "(%d,%d)", i, j);
+    //             ImGui::InputFloat3(label, coords);
+    //             glm::vec3 new_coords({coords[0], coords[1], coords[2]});
+    //             if (new_coords != control_points[i][j])
+    //             {
+    //                 control_points[i][j] = new_coords;
+    //                 needs_update = true;
+    //             }
+    //         }
+    //     }
+    // }
+    // if (ImGui::CollapsingHeader("Knots"))
+    // {
+    //     ImGui::Columns(2, NULL, true);
+    //     ImGui::Text("u");
+    //     ImGui::NextColumn();
+    //     ImGui::Text("v");
+    //     ImGui::NextColumn();
+    //     float step = 0.05f;
+    //     U[h] -= EPSILON;
+    //     for (int i = 0; i < h + 1; ++i)
+    //     {
+    //         float val = U[i];
+    //         char label[5];
+    //         sprintf(label, "##u%d", i);
+    //         ImGui::InputFloat(label, &val, step);
+    //         if (val >= 0.0 && val <= 1.0 && val != U[i])
+    //         {
+    //             U[i] = val;
+    //             needs_update = true;
+    //         }
+    //     }
+    //     ImGui::NextColumn();
+    //     V[k] -= EPSILON;
+    //     for (int i = 0; i < k + 1; ++i)
+    //     {
+    //         float val = V[i];
+    //         char label[5];
+    //         sprintf(label, "##v%d", i);
+    //         ImGui::InputFloat(label, &val, step);
+    //         if (val >= 0.0 && val <= 1.0 && val != V[i])
+    //         {
+    //             V[i] = val;
+    //             needs_update = true;
+    //         }
+    //     }
+    //     ImGui::Columns(1);
+    //     std::sort(U.begin(), U.end());
+    //     U[h] += EPSILON;
+    //     std::sort(V.begin(), V.end());
+    //     V[k] += EPSILON;
+    // }
+    // if (needs_update)
+    // {
+    //     LoadControlPoints();
+    //     LoadInterpolatedPoints();
+    //     LoadKnots();
+    // }
 }

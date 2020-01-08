@@ -18,10 +18,22 @@ void MouseScroll(GLFWwindow *window, double x, double y)
         base->MouseScroll(y);
 }
 
+void MousePress(GLFWwindow *window, int button, int action, int mods)
+{
+    if (base)
+        base->MousePress(button, action);
+}
+
+void MouseMove(GLFWwindow *window, double x, double y)
+{
+    if (base)
+        base->MouseMove(x, y);
+}
+
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (base)
-        base->ProcessKeysCallback(key, action);
+        base->KeyPress(key, action);
 }
 
 void Resize(GLFWwindow *window, int width, int height)
@@ -80,6 +92,8 @@ int main(int argc, char **argv)
     glfwSetScrollCallback(window, MouseScroll);
     glfwSetKeyCallback(window, KeyCallback);
     glfwSetWindowSizeCallback(window, Resize);
+    glfwSetMouseButtonCallback(window, MousePress);
+    glfwSetCursorPosCallback(window, MouseMove);
 
     while (glfwWindowShouldClose(window) == 0 && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
     {

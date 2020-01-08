@@ -5,7 +5,7 @@ CXXFLAGS=-Wall -g
 all: main
 LDLIBS=-L/usr/lib/ -lglfw3 -lGL -lGLEW
 
-OBJS=main.o	shader_loader.o	base.o sphere.o bspline_surface.o imgui.o imgui_impl_opengl3.o imgui_impl_glfw.o imgui_draw.o imgui_widgets.o
+OBJS=main.o	shader_loader.o	base.o bspline_surface.o imgui.o imgui_impl_opengl3.o imgui_impl_glfw.o imgui_draw.o imgui_widgets.o
 main: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o main $(OBJS) $(LDLIBS)
 
@@ -15,11 +15,8 @@ main.o:	main.cpp shader_loader.hpp base.hpp imgui/imgui.h imgui/imgui_impl_openg
 shader_loader.o: shader_loader.cpp
 	$(CXX) $(CXXFLAGS) -c shader_loader.cpp
 
-base.o: base.cpp sphere.hpp bspline_surface.hpp imgui/imgui.h
+base.o: base.cpp bspline_surface.hpp imgui/imgui.h
 	$(CXX) $(CXXFLAGS) -c base.cpp
-
-sphere.o: sphere.cpp
-	$(CXX) $(CXXFLAGS) -c sphere.cpp
 
 bspline_surface.o: bspline_surface.cpp
 	$(CXX) $(CXXFLAGS) -c bspline_surface.cpp
