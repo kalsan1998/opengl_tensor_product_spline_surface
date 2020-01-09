@@ -20,8 +20,6 @@ public:
     BSplineSurface(GLuint program);
     ~BSplineSurface() = default;
     void Draw();
-    void ProcessKeys(int key, int action);
-    void GuiLogic();
 
 private:
     void DrawBSplineSurface();
@@ -32,10 +30,9 @@ private:
     void LoadInterpolatedPoints();
     void LoadKnots();
     void LoadControlPoints();
-    float BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots);
 
+    float BSplineBasisFn(float u, int i, int p, const std::vector<float> &knots);
     void UpdateKnots();
-    bool UpdateControlPointCounts(int new_m, int new_n);
 
     GLuint program;
     GLuint color_location;

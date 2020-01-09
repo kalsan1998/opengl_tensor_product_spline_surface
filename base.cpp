@@ -98,10 +98,6 @@ void Base::KeyPress(int key, int action)
     {
         SetDefaults();
     }
-    else
-    {
-        bspline_surface.ProcessKeys(key, action);
-    }
 }
 
 void Base::MouseMove(double x, double y)
