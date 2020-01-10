@@ -1,5 +1,6 @@
 <h1>January 9th, 2020</h1>
 <h3><b>COMPLETED</b></h3>
+
 - Rotate world via mouse click and drag.
 - Modularize mouse handler.
 - Modularize keyboard handler.
@@ -17,6 +18,7 @@
 
 <h1><b>TODO</b></h1>
 <h4>IMPORTANT</h4>
+
 - B-spline control point manipulation via click and drag.
   - Implement control point selection by clicking.
   - If this is too hard then maybe allow cycling through points with keyboard.
