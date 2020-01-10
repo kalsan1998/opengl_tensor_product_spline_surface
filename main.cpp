@@ -1,5 +1,7 @@
 #include "shader_loader.hpp"
-#include "base.hpp"
+#include "renderer.hpp"
+#include "mouse_handler.hpp"
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
@@ -11,35 +13,37 @@
 #include <iostream>
 #include <memory>
 
-std::unique_ptr<Base> base;
+std::unique_ptr<MouseHandler> mouse_handler;
+std::unique_ptr<Renderer> renderer;
+
 void MouseScroll(GLFWwindow *window, double x, double y)
 {
-    if (base)
-        base->MouseScroll(y);
+    if (mouse_handler)
+        mouse_handler->MouseScroll(y);
 }
 
 void MousePress(GLFWwindow *window, int button, int action, int mods)
 {
-    if (base)
-        base->MousePress(button, action);
+    if (mouse_handler)
+        mouse_handler->MousePress(button, action);
 }
 
 void MouseMove(GLFWwindow *window, double x, double y)
 {
-    if (base)
-        base->MouseMove(x, y);
+    if (mouse_handler)
+        mouse_handler->MouseMove(x, y);
 }
 
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    if (base)
-        base->KeyPress(key, action);
+    if (renderer)
+        renderer->KeyPress(key, action);
 }
 
 void Resize(GLFWwindow *window, int width, int height)
 {
-    if (base)
-        base->Resize(width, height);
+    if (renderer)
+        renderer->Resize(width, height);
 }
 
 void SetUpImGui(GLFWwindow *window)
@@ -88,24 +92,27 @@ int main(int argc, char **argv)
 
     GLuint shader_program = LoadShader("shaders/vertex_shader.vs", "shaders/fragment_shader.fs");
     glUseProgram(shader_program);
-    base = std::make_unique<Base>(shader_program);
+
+    renderer = std::make_unique<Renderer>(shader_program);
+    mouse_handler = std::make_unique<MouseHandler>(renderer.get());
+
     glfwSetScrollCallback(window, MouseScroll);
     glfwSetKeyCallback(window, KeyCallback);
     glfwSetWindowSizeCallback(window, Resize);
     glfwSetMouseButtonCallback(window, MousePress);
     glfwSetCursorPosCallback(window, MouseMove);
 
-    while (glfwWindowShouldClose(window) == 0 && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
+    while (glfwWindowShouldClose(window) == 0)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        if (base)
+        if (renderer)
         {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-            base->GuiLogic(window);
-            base->Draw();
+            renderer->GuiLogic(window);
+            renderer->Draw();
 
             // Render dear imgui into screen
             ImGui::Render();

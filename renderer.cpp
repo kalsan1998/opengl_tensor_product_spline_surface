@@ -1,33 +1,52 @@
-#include "base.hpp"
+#include "renderer.hpp"
 
 #include <iostream>
 
 #include "imgui/imgui.h"
 #include "glm/ext.hpp"
 
-Base::Base(GLuint program) : program(program), is_clicked(false), bspline_surface(program)
+Renderer::Renderer(GLuint program) : program(program), bspline_surface(program)
 {
     SetDefaults();
-
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
 }
 
-void Base::SetDefaults()
+void Renderer::SetDefaults()
 {
     zoom = 5.0f;
-    scale = 1.0f;
-    theta = 0.0f;
-    phi = 0.0f;
     free_mode = true;
     projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     view = glm::lookAt(glm::vec3(0.0f, 0.0f, zoom), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::mat4(1.0f);
 }
 
-void Base::Draw()
+void Renderer::RotateWorld(float radians, int axis)
+{
+    model = glm::rotate(model, radians, glm::vec3(model[0][axis], model[1][axis], model[2][axis]));
+}
+
+void Renderer::TranslateView(const glm::vec3 &val)
+{
+    view = glm::translate(view, val);
+}
+
+void Renderer::ZoomViewBy(float zoom_amount)
+{
+    zoom += zoom_amount;
+    if (zoom < 0.2f)
+    {
+        zoom = 0.2f;
+    }
+    else
+    {
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -zoom_amount));
+    }
+}
+
+void Renderer::Draw()
 {
     GLuint model_location = glGetUniformLocation(program, "model");
     GLuint view_location = glGetUniformLocation(program, "view");
@@ -38,7 +57,7 @@ void Base::Draw()
     bspline_surface.Draw();
 }
 
-void Base::KeyPress(int key, int action)
+void Renderer::KeyPress(int key, int action)
 {
     if (action == GLFW_RELEASE)
         return;
@@ -50,7 +69,6 @@ void Base::KeyPress(int key, int action)
         }
         else
         {
-            phi += 0.1f;
             model = glm::rotate(model, 0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
         }
     }
@@ -62,7 +80,6 @@ void Base::KeyPress(int key, int action)
         }
         else
         {
-            phi -= 0.1f;
             model = glm::rotate(model, -0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
         }
     }
@@ -74,7 +91,6 @@ void Base::KeyPress(int key, int action)
         }
         else
         {
-            theta -= 0.1f;
             model = glm::rotate(model, -0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
         }
     }
@@ -86,7 +102,6 @@ void Base::KeyPress(int key, int action)
         }
         else
         {
-            theta += 0.1f;
             model = glm::rotate(model, 0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
         }
     }
@@ -100,55 +115,7 @@ void Base::KeyPress(int key, int action)
     }
 }
 
-void Base::MouseMove(double x, double y)
-{
-    if (is_clicked)
-    {
-        float x_delta = x - mouse_x_pos;
-        float y_delta = y - mouse_y_pos;
-
-        // If in free mode then translate. Else rotate.
-        if (free_mode)
-        {
-            view = glm::translate(view, glm::vec3(x_delta / 100.0f, -y_delta / 100.0f, 0.0f));
-        }
-        else
-        {
-            float theta_delta = glm::radians(x_delta);
-            float phi_delta = glm::radians(y_delta);
-            theta += theta_delta;
-            phi += phi_delta;
-            model = glm::rotate(model, theta_delta, glm::vec3(model[0][1], model[1][1], model[2][1]));
-            model = glm::rotate(model, phi_delta, glm::vec3(model[0][0], model[1][0], model[2][0]));
-        }
-    }
-    mouse_x_pos = x;
-    mouse_y_pos = y;
-}
-
-void Base::MousePress(int button, int action)
-{
-    if (button == GLFW_MOUSE_BUTTON_LEFT)
-    {
-        is_clicked = (GLFW_PRESS == action);
-    }
-}
-
-void Base::MouseScroll(double y)
-{
-    zoom += 0.2f * -y;
-    if (zoom < 0.2f)
-    {
-        zoom = 0.2f;
-    }
-    else
-    {
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, 0.2f * y));
-    }
-    scale = std::max(5.0f / zoom, 1.0f);
-}
-
-void Base::Resize(int width, int height)
+void Renderer::Resize(int width, int height)
 
 {
     glViewport(0, 0, width, height);
@@ -167,7 +134,7 @@ void ToolTipHelper(const char *text)
     }
 }
 
-void Base::GuiLogic(GLFWwindow *window)
+void Renderer::GuiLogic(GLFWwindow *window)
 {
     static bool show_window(true);
     ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);

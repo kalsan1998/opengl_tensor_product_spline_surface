@@ -7,15 +7,17 @@
 
 #include "bspline_surface.hpp"
 
-class Base
+class Renderer
 {
 public:
-    Base(GLuint program);
+    Renderer(GLuint program);
     void Draw();
+    void RotateWorld(float radians, int axis);
+    void TranslateView(const glm::vec3 &val);
+    void ZoomViewBy(float zoom);
+    bool IsInFreeMode() const { return free_mode; }
+
     void KeyPress(int key, int action);
-    void MouseMove(double x, double y);
-    void MousePress(int button, int action);
-    void MouseScroll(double y);
     void Resize(int width, int height);
     void GuiLogic(GLFWwindow *window);
 
@@ -29,15 +31,8 @@ private:
     glm::mat4 model;
 
     float zoom;
-    float scale;
-    float theta;
-    float phi;
-
-    float mouse_x_pos;
-    float mouse_y_pos;
 
     bool free_mode;
-    bool is_clicked;
 
     BSplineSurface bspline_surface;
 };
