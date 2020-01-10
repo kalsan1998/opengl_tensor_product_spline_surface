@@ -11,19 +11,18 @@ class Renderer
 {
 public:
     Renderer(GLuint program);
+    void SetDefaults();
     void Draw();
     void RotateWorld(float radians, int axis);
     void TranslateView(const glm::vec3 &val);
     void ZoomViewBy(float zoom);
+    float GetZoomFactor() { return 5.0f / zoom; }
     bool IsInFreeMode() const { return free_mode; }
+    void ToggleFreeMode() { free_mode = !free_mode; }
 
-    void KeyPress(int key, int action);
     void Resize(int width, int height);
-    void GuiLogic(GLFWwindow *window);
 
 private:
-    void SetDefaults();
-
     GLuint program;
 
     glm::mat4 projection;

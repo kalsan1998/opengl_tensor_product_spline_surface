@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-#include "renderer.hpp"
+class Renderer;
 
 class MouseHandler
 {
@@ -22,9 +22,6 @@ private:
     bool is_clicked = false;
 
     glm::vec3 ray;
-
-    glm::mat4 projection;
-    glm::mat4 view;
 };
 
 #endif

@@ -1,5 +1,7 @@
 #include "mouse_handler.hpp"
 
+#include "renderer.hpp"
+
 MouseHandler::MouseHandler(Renderer *renderer) : renderer(renderer)
 {
 }

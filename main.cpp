@@ -1,6 +1,8 @@
 #include "shader_loader.hpp"
 #include "renderer.hpp"
 #include "mouse_handler.hpp"
+#include "keyboard_handler.hpp"
+#include "gui.hpp"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -14,30 +16,32 @@
 #include <memory>
 
 std::unique_ptr<MouseHandler> mouse_handler;
+std::unique_ptr<KeyboardHandler> keyboard_handler;
+std::unique_ptr<Gui> gui;
 std::unique_ptr<Renderer> renderer;
 
 void MouseScroll(GLFWwindow *window, double x, double y)
 {
-    if (mouse_handler)
+    if (renderer)
         mouse_handler->MouseScroll(y);
 }
 
 void MousePress(GLFWwindow *window, int button, int action, int mods)
 {
-    if (mouse_handler)
+    if (renderer)
         mouse_handler->MousePress(button, action);
 }
 
 void MouseMove(GLFWwindow *window, double x, double y)
 {
-    if (mouse_handler)
+    if (renderer)
         mouse_handler->MouseMove(x, y);
 }
 
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (renderer)
-        renderer->KeyPress(key, action);
+        keyboard_handler->KeyPress(key, action);
 }
 
 void Resize(GLFWwindow *window, int width, int height)
@@ -94,6 +98,8 @@ int main(int argc, char **argv)
     glUseProgram(shader_program);
 
     renderer = std::make_unique<Renderer>(shader_program);
+    gui = std::make_unique<Gui>(window, renderer.get());
+    keyboard_handler = std::make_unique<KeyboardHandler>(renderer.get());
     mouse_handler = std::make_unique<MouseHandler>(renderer.get());
 
     glfwSetScrollCallback(window, MouseScroll);
@@ -111,7 +117,7 @@ int main(int argc, char **argv)
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-            renderer->GuiLogic(window);
+            gui->HandleLogic();
             renderer->Draw();
 
             // Render dear imgui into screen

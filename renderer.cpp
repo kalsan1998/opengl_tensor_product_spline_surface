@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include "imgui/imgui.h"
 #include "glm/ext.hpp"
 
 Renderer::Renderer(GLuint program) : program(program), bspline_surface(program)
@@ -57,96 +56,9 @@ void Renderer::Draw()
     bspline_surface.Draw();
 }
 
-void Renderer::KeyPress(int key, int action)
-{
-    if (action == GLFW_RELEASE)
-        return;
-    if (key == GLFW_KEY_DOWN)
-    {
-        if (free_mode)
-        {
-            view = glm::translate(view, glm::vec3(0.0f, 0.1f, 0.0f));
-        }
-        else
-        {
-            model = glm::rotate(model, 0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
-        }
-    }
-    else if (key == GLFW_KEY_UP)
-    {
-        if (free_mode)
-        {
-            view = glm::translate(view, glm::vec3(0.0f, -0.1f, 0.0f));
-        }
-        else
-        {
-            model = glm::rotate(model, -0.1f, glm::vec3(model[0][0], model[1][0], model[2][0]));
-        }
-    }
-    else if (key == GLFW_KEY_LEFT)
-    {
-        if (free_mode)
-        {
-            view = glm::translate(view, glm::vec3(0.1f, 0.0f, 0.0f));
-        }
-        else
-        {
-            model = glm::rotate(model, -0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
-        }
-    }
-    else if (key == GLFW_KEY_RIGHT)
-    {
-        if (free_mode)
-        {
-            view = glm::translate(view, glm::vec3(-0.1f, 0.0f, 0.0f));
-        }
-        else
-        {
-            model = glm::rotate(model, 0.1f, glm::vec3(model[0][1], model[1][1], model[2][1]));
-        }
-    }
-    else if (key == GLFW_KEY_TAB)
-    {
-        free_mode = !free_mode;
-    }
-    else if (key == GLFW_KEY_R)
-    {
-        SetDefaults();
-    }
-}
-
 void Renderer::Resize(int width, int height)
 
 {
     glViewport(0, 0, width, height);
     projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
-}
-
-void ToolTipHelper(const char *text)
-{
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(text);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-}
-
-void Renderer::GuiLogic(GLFWwindow *window)
-{
-    static bool show_window(true);
-    ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Begin("##window", &show_window, windowFlags);
-    if (ImGui::Button("Reset Camera"))
-    {
-        SetDefaults();
-    }
-    ToolTipHelper("R");
-    ImGui::Checkbox("Free Roam", &free_mode);
-    ToolTipHelper("TAB");
-    ImGui::Text("Zoom Factor: %.1f", 5.0f / zoom);
-    ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
-    ImGui::End();
 }
