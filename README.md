@@ -1,4 +1,8 @@
-<h1>January 9th, 2020</h1>
+<h1>January 10, 2020</h1>
+<h3><b>COMPLETED</b></h3>
+- Clean up main/base.
+
+<h1>January 9, 2020</h1>
 <h3><b>COMPLETED</b></h3>
 
 - Rotate world via mouse click and drag.
@@ -6,7 +10,7 @@
 - Modularize keyboard handler.
 - Modularize GUI logic.
 
-<h1>January 8th, 2020</h1>
+<h1>January 8, 2020</h1>
 <h3><b>COMPLETED</b></h3>
 
 - Implement a b-spline surface with uniform knots.
@@ -29,6 +33,6 @@
 <h4>POLISH</h4>
 
 - Formatting!
-- Clean up main.
+- Make shader loading cleaner.
 - Make mouse movement linearly affect world translation.
 - Add keyboard shortcuts widget.

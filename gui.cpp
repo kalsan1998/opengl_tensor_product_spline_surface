@@ -1,10 +1,10 @@
 #include "imgui/imgui.h"
 #include "gui.hpp"
-#include "renderer.hpp"
+#include "base.hpp"
 
 #include <GLFW/glfw3.h>
 
-Gui::Gui(GLFWwindow *window, Renderer *renderer) : window(window), renderer(renderer) {}
+Gui::Gui(GLFWwindow *window, Base *base) : window(window), base(base) {}
 
 void ToolTipHelper(const char *text)
 {
@@ -20,21 +20,21 @@ void ToolTipHelper(const char *text)
 
 void Gui::HandleLogic()
 {
-    bool free_mode = renderer->IsInFreeMode();
+    bool free_mode = base->IsInFreeMode();
     static bool show_window(true);
     ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Begin("##window", &show_window, windowFlags);
     if (ImGui::Button("Reset Camera"))
     {
-        renderer->SetDefaults();
+        base->SetDefaults();
     }
     ToolTipHelper("R");
     if (ImGui::Checkbox("Free Roam", &free_mode))
     {
-        renderer->ToggleFreeMode();
+        base->ToggleFreeMode();
     }
     ToolTipHelper("TAB");
-    ImGui::Text("Zoom Factor: %.1f", renderer->GetZoomFactor());
+    ImGui::Text("Zoom Factor: %.1f", base->GetZoomFactor());
     ImGui::Text("Framerate: %.1f FPS", ImGui::GetIO().Framerate);
     ImGui::End();
 }

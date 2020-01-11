@@ -1,8 +1,8 @@
 #include "keyboard_handler.hpp"
 
-#include "renderer.hpp"
+#include "base.hpp"
 
-KeyboardHandler::KeyboardHandler(Renderer *renderer) : renderer(renderer)
+KeyboardHandler::KeyboardHandler(Base *base) : base(base)
 {
 }
 
@@ -13,54 +13,54 @@ void KeyboardHandler::KeyPress(int key, int action)
 
     if (key == GLFW_KEY_DOWN)
     {
-        if (renderer->IsInFreeMode())
+        if (base->IsInFreeMode())
         {
-            renderer->TranslateView(glm::vec3(0.0f, -0.1f, 0.0f));
+            base->TranslateView(glm::vec3(0.0f, -0.1f, 0.0f));
         }
         else
         {
-            renderer->RotateWorld(0.1f, 0);
+            base->RotateWorld(0.1f, 0);
         }
     }
     else if (key == GLFW_KEY_UP)
     {
-        if (renderer->IsInFreeMode())
+        if (base->IsInFreeMode())
         {
-            renderer->TranslateView(glm::vec3(0.0f, 0.1f, 0.0f));
+            base->TranslateView(glm::vec3(0.0f, 0.1f, 0.0f));
         }
         else
         {
-            renderer->RotateWorld(-0.1f, 0);
+            base->RotateWorld(-0.1f, 0);
         }
     }
     else if (key == GLFW_KEY_LEFT)
     {
-        if (renderer->IsInFreeMode())
+        if (base->IsInFreeMode())
         {
-            renderer->TranslateView(glm::vec3(-0.1f, 0.0f, 0.0f));
+            base->TranslateView(glm::vec3(-0.1f, 0.0f, 0.0f));
         }
         else
         {
-            renderer->RotateWorld(-0.1f, 1);
+            base->RotateWorld(-0.1f, 1);
         }
     }
     else if (key == GLFW_KEY_RIGHT)
     {
-        if (renderer->IsInFreeMode())
+        if (base->IsInFreeMode())
         {
-            renderer->TranslateView(glm::vec3(0.1f, 0.0f, 0.0f));
+            base->TranslateView(glm::vec3(0.1f, 0.0f, 0.0f));
         }
         else
         {
-            renderer->RotateWorld(0.1f, 1);
+            base->RotateWorld(0.1f, 1);
         }
     }
     else if (key == GLFW_KEY_TAB)
     {
-        renderer->ToggleFreeMode();
+        base->ToggleFreeMode();
     }
     else if (key == GLFW_KEY_R)
     {
-        renderer->SetDefaults();
+        base->SetDefaults();
     }
 }

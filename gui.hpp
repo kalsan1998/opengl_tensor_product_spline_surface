@@ -2,17 +2,17 @@
 #define GUI_H
 
 class GLFWwindow;
-class Renderer;
+class Base;
 
 class Gui
 {
 public:
-    Gui(GLFWwindow *window, Renderer *renderer);
+    Gui(GLFWwindow *window, Base *base);
     void HandleLogic();
 
 private:
     GLFWwindow *window;
-    Renderer *renderer;
+    Base *base;
 };
 
 #endif

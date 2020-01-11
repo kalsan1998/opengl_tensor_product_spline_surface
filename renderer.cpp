@@ -4,9 +4,12 @@
 
 #include "glm/ext.hpp"
 
-Renderer::Renderer(GLuint program) : program(program), bspline_surface(program)
+Renderer::Renderer(GLFWwindow *window, GLuint program) : window(window), program(program), bspline_surface(program)
 {
     SetDefaults();
+    glfwGetFramebufferSize(window, &frame_buffer_width, &frame_buffer_height);
+    glfwGetWindowSize(window, &window_width, &window_height);
+
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
@@ -61,4 +64,6 @@ void Renderer::Resize(int width, int height)
 {
     glViewport(0, 0, width, height);
     projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+    glfwGetFramebufferSize(window, &frame_buffer_width, &frame_buffer_height);
+    glfwGetWindowSize(window, &window_width, &window_height);
 }

@@ -3,12 +3,12 @@
 
 #include <glm/glm.hpp>
 
-class Renderer;
+class Base;
 
 class MouseHandler
 {
 public:
-    MouseHandler(Renderer *renderer);
+    MouseHandler(Base *base);
     void MouseMove(double x, double y);
     void MousePress(int button, int action);
     void MouseScroll(double y);
@@ -16,12 +16,10 @@ public:
     void Update();
 
 private:
-    Renderer *renderer;
+    Base *base;
     float mouse_x_pos;
     float mouse_y_pos;
     bool is_clicked = false;
-
-    glm::vec3 ray;
 };
 
 #endif

@@ -3,16 +3,16 @@
 
 #include <glm/glm.hpp>
 
-class Renderer;
+class Base;
 
 class KeyboardHandler
 {
 public:
-    KeyboardHandler(Renderer *renderer);
+    KeyboardHandler(Base *base);
     void KeyPress(int key, int action);
 
 private:
-    Renderer *renderer;
+    Base *base;
 };
 
 #endif
